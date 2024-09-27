@@ -6,26 +6,8 @@ class DokterScreen extends StatefulWidget {
 }
 
 class _DokterScreenState extends State<DokterScreen> {
-  List<Map<String, dynamic>> dokterList = [
-    {
-      "name": "Raihan Ardiansah",
-      "spesialis": "Batuk Pilek",
-      "alamat": "Bandar Lampung",
-      "email": "Raihan@gmail.com",
-      "nomor_telepon": "0892929191",
-      "catatan": "-",
-      "image": "assets/images/doctor1.png"
-    },
-    {
-      "name": "Amanda",
-      "spesialis": "Tipes",
-      "alamat": "Bandar Lampung",
-      "email": "amanda@gmail.com",
-      "nomor_telepon": "085711223344",
-      "catatan": "-",
-      "image": "assets/images/doctor2.png"
-    },
-  ];
+  List<Map<String, dynamic>> dokterList = [];
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +29,7 @@ class _DokterScreenState extends State<DokterScreen> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Search Dokter',
                       prefixIcon: Icon(Icons.search),
@@ -54,6 +37,9 @@ class _DokterScreenState extends State<DokterScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
+                    onChanged: (value) {
+                      // Tambahkan logika pencarian jika diperlukan
+                    },
                   ),
                 ),
               ],
@@ -65,14 +51,11 @@ class _DokterScreenState extends State<DokterScreen> {
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundImage: AssetImage(dokterList[index]['image']),
+                    backgroundImage: AssetImage(dokterList[index]['photo']),
                     radius: 30,
                   ),
                   title: Text('Nama Dokter: ${dokterList[index]['name']}'),
-                  subtitle:
-                      Text('Spesialis: ${dokterList[index]['spesialis']}'),
                   onTap: () {
-                    // Navigasi ke halaman detail dokter saat item diklik
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -90,10 +73,19 @@ class _DokterScreenState extends State<DokterScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Aksi untuk tombol tambah dokter
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => TambahDokterScreen()),
+            MaterialPageRoute(
+                builder: (context) => TambahDokterScreen(
+                      onAddDokter: (String name) {
+                        setState(() {
+                          dokterList.add({
+                            "name": name,
+                            "photo": 'assets/images/doctor1.png',
+                          });
+                        });
+                      },
+                    )),
           );
         },
         backgroundColor: Colors.green,
@@ -116,7 +108,7 @@ class DetailDokterScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Kembali ke halaman sebelumnya
+            Navigator.pop(context);
           },
         ),
       ),
@@ -126,11 +118,6 @@ class DetailDokterScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildDetailRow('Nama Dokter', dokter['name']),
-            _buildDetailRow('Spesialis', dokter['spesialis']),
-            _buildDetailRow('Alamat', dokter['alamat']),
-            _buildDetailRow('Email', dokter['email']),
-            _buildDetailRow('Nomor Telepon', dokter['nomor_telepon']),
-            _buildDetailRow('Catatan', dokter['catatan']),
           ],
         ),
       ),
@@ -142,27 +129,13 @@ class DetailDokterScreen extends StatelessWidget {
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TambahDokterScreen(),
-                    ),
-                  );
+                  // Tambahkan logika edit dokter
                 },
                 icon: Icon(
                   Icons.edit,
-                  size: 18, // Mengurangi ukuran icon
+                  size: 18,
                 ),
-                label: Text(
-                  'Edit',
-                  style: TextStyle(
-                    fontSize: 14, // Mengurangi ukuran font
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8), // Mengurangi padding
-                ),
+                label: Text('Edit'),
               ),
               ElevatedButton.icon(
                 onPressed: () {
@@ -175,15 +148,14 @@ class DetailDokterScreen extends StatelessWidget {
                       actions: [
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Tutup dialog
+                            Navigator.pop(context);
                           },
                           child: Text('Batal'),
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Tutup dialog
-                            Navigator.pop(
-                                context); // Kembali ke halaman sebelumnya
+                            Navigator.pop(context);
+                            // Logika hapus dokter dari daftar
                           },
                           child: Text('Hapus'),
                         ),
@@ -193,19 +165,9 @@ class DetailDokterScreen extends StatelessWidget {
                 },
                 icon: Icon(
                   Icons.delete,
-                  size: 18, // Mengurangi ukuran icon
+                  size: 18,
                 ),
-                label: Text(
-                  'Hapus',
-                  style: TextStyle(
-                    fontSize: 14, // Mengurangi ukuran font
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8), // Mengurangi padding
-                  backgroundColor: Colors.black,
-                ),
+                label: Text('Hapus'),
               ),
             ],
           ),
@@ -232,6 +194,12 @@ class DetailDokterScreen extends StatelessWidget {
 }
 
 class TambahDokterScreen extends StatelessWidget {
+  final Function(String) onAddDokter;
+
+  TambahDokterScreen({required this.onAddDokter});
+
+  final TextEditingController _nameController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -240,13 +208,14 @@ class TambahDokterScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Kembali ke halaman sebelumnya
+            Navigator.pop(context);
           },
         ),
         actions: [
           TextButton(
             onPressed: () {
-              // Aksi untuk menyimpan data dokter
+              onAddDokter(_nameController.text);
+              Navigator.pop(context);
             },
             child: Text(
               'Simpan',
@@ -259,19 +228,15 @@ class TambahDokterScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildInputField(Icons.person, 'Nama Dokter'),
-            _buildInputField(Icons.medical_services, 'Spesialis'),
-            _buildInputField(Icons.location_on, 'Alamat'),
-            _buildInputField(Icons.email, 'Email'),
-            _buildInputField(Icons.phone, 'Nomor Telepon'),
-            _buildInputField(Icons.note, 'Catatan'),
+            _buildInputField(Icons.person, 'Nama Dokter', _nameController),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInputField(IconData icon, String label) {
+  Widget _buildInputField(
+      IconData icon, String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Container(
@@ -285,12 +250,11 @@ class TambahDokterScreen extends StatelessWidget {
             Icon(icon, color: Colors.green),
             SizedBox(width: 10),
             Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black,
+              child: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: label,
+                  border: InputBorder.none,
                 ),
               ),
             ),

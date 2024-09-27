@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dokter_screen.dart'; // Import halaman dokter
-import 'obat_screen.dart'; // Import halaman obat
+import '../dokter/dokter_screen.dart'; // Import halaman dokter
+import '../obat/obat_screen.dart'; // Import halaman obat
 
 class DokumenScreen extends StatelessWidget {
   @override

@@ -6,15 +6,25 @@ class ObatScreen extends StatefulWidget {
 }
 
 class _ObatScreenState extends State<ObatScreen> {
-  List<Map<String, dynamic>> obatList = [
-    {
-      "name": "Paracetamol",
-      "stok": 100,
-      "keterangan": "500 mg",
-      "image": "assets/images/obat1.png"
-    },
-    // Tambahkan daftar obat lain jika ada
-  ];
+ List<Map<String, dynamic>> obatList = []; 
+
+  void _addObat(Map<String, dynamic> newObat) {
+    setState(() {
+      obatList.add(newObat);
+    });
+  }
+
+  void _editObat(int index, Map<String, dynamic> updatedObat) {
+    setState(() {
+      obatList[index] = updatedObat;
+    });
+  }
+
+  void _deleteObat(int index) {
+    setState(() {
+      obatList.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,12 +70,14 @@ class _ObatScreenState extends State<ObatScreen> {
                   title: Text('Nama Obat: ${obatList[index]['name']}'),
                   subtitle: Text('Stok: ${obatList[index]['stok']}'),
                   onTap: () {
-                    // Navigasi ke halaman detail obat saat item diklik
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => DetailObatScreen(
                           obat: obatList[index],
+                          onEdit: (updatedObat) =>
+                              _editObat(index, updatedObat),
+                          onDelete: () => _deleteObat(index),
                         ),
                       ),
                     );
@@ -77,12 +89,14 @@ class _ObatScreenState extends State<ObatScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Aksi untuk tombol tambah obat
-          Navigator.push(
+        onPressed: () async {
+          final newObat = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => TambahObatScreen()),
           );
+          if (newObat != null) {
+            _addObat(newObat);
+          }
         },
         backgroundColor: Colors.green,
         child: Icon(Icons.add),
@@ -93,8 +107,14 @@ class _ObatScreenState extends State<ObatScreen> {
 
 class DetailObatScreen extends StatelessWidget {
   final Map<String, dynamic> obat;
+  final Function(Map<String, dynamic>) onEdit;
+  final Function() onDelete;
 
-  DetailObatScreen({required this.obat});
+  DetailObatScreen({
+    required this.obat,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +124,7 @@ class DetailObatScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Kembali ke halaman sebelumnya
+            Navigator.pop(context);
           },
         ),
       ),
@@ -155,21 +175,31 @@ class DetailObatScreen extends StatelessWidget {
           children: [
             IconButton(
               icon: Icon(Icons.edit, color: Colors.black),
-              iconSize: 20, // Ukuran lebih kecil
-              onPressed: () {
-                // Aksi edit
+              iconSize: 20,
+              onPressed: () async {
+                final updatedObat = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TambahObatScreen(obat: obat),
+                  ),
+                );
+                if (updatedObat != null) {
+                  onEdit(updatedObat);
+                  Navigator.pop(context);
+                }
               },
             ),
             IconButton(
               icon: Icon(Icons.delete, color: Colors.black),
-              iconSize: 20, // Ukuran lebih kecil
+              iconSize: 20,
               onPressed: () {
-                // Aksi delete
+                onDelete();
+                Navigator.pop(context);
               },
             ),
             IconButton(
               icon: Icon(Icons.print, color: Colors.black),
-              iconSize: 20, // Ukuran lebih kecil
+              iconSize: 20,
               onPressed: () {
                 // Aksi print
               },
@@ -181,23 +211,55 @@ class DetailObatScreen extends StatelessWidget {
   }
 }
 
-class TambahObatScreen extends StatelessWidget {
+class TambahObatScreen extends StatefulWidget {
+  final Map<String, dynamic>? obat;
+
+  TambahObatScreen({this.obat});
+
+  @override
+  _TambahObatScreenState createState() => _TambahObatScreenState();
+}
+
+class _TambahObatScreenState extends State<TambahObatScreen> {
+  final _nameController = TextEditingController();
+  final _stokController = TextEditingController();
+  final _keteranganController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.obat != null) {
+      _nameController.text = widget.obat!['name'];
+      _stokController.text = widget.obat!['stok'].toString();
+      _keteranganController.text = widget.obat!['keterangan'];
+    }
+  }
+
+  void _saveObat() {
+    final newObat = {
+      "name": _nameController.text,
+      "stok": int.parse(_stokController.text),
+      "keterangan": _keteranganController.text,
+      "image":
+          "assets/images/obat1.png", // Default image or implement image picker
+    };
+    Navigator.pop(context, newObat);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tambah Obat'),
+        title: Text(widget.obat == null ? 'Tambah Obat' : 'Edit Obat'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Kembali ke halaman sebelumnya
+            Navigator.pop(context);
           },
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              // Aksi untuk menyimpan data obat
-            },
+            onPressed: _saveObat,
             child: Text(
               'Simpan',
               style: TextStyle(color: Colors.green, fontSize: 16),
@@ -209,39 +271,29 @@ class TambahObatScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildInputField(Icons.medical_services, 'Nama Obat'),
-            _buildInputField(Icons.bookmark, 'Stok'),
-            _buildInputField(Icons.description, 'Keterangan'),
+            _buildInputField(
+                Icons.medical_services, 'Nama Obat', _nameController),
+            _buildInputField(Icons.bookmark, 'Stok', _stokController),
+            _buildInputField(
+                Icons.description, 'Keterangan', _keteranganController),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInputField(IconData icon, String label) {
+  Widget _buildInputField(
+      IconData icon, String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.green, width: 2),
-          borderRadius: BorderRadius.circular(25),
-        ),
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.green),
-            SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ],
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.green),
+          hintText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
         ),
       ),
     );

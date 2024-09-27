@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'login_register_selection.dart';
-import '../widgets/dot_indicator.dart';
+import '../auth/login_register_selection.dart';
+import '../../widgets/dot_indicator.dart';
 
 class IntroScreen extends StatefulWidget {
   @override
