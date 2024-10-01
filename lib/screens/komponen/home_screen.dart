@@ -73,7 +73,7 @@ class _HomeContentState extends State<HomeContent> {
   // Daftar gambar
   final List<String> _images = [
     'assets/images/hero.jpg', // Path gambar
-    'assets/images/doctor2.png', // Path gambar
+    'assets/images/klinik.jpg', // Path gambar
     'assets/images/doctor3.png', // Path gambar
   ];
 

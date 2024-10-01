@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../dokter/dokter_screen.dart'; // Import halaman dokter
 import '../obat/obat_screen.dart'; // Import halaman obat
+import '../gula_darah/gula_darah_screen.dart'; // Import halaman gula darah
 
 class DokumenScreen extends StatelessWidget {
   @override
@@ -64,6 +65,32 @@ class DokumenScreen extends StatelessWidget {
                   SizedBox(width: 16), // Jarak antara gambar dan teks
                   Text(
                     'Obat',
+                    style: TextStyle(fontSize: 18), // Tambah ukuran font
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20), // Jarak vertikal antara Obat dan Gula Darah
+            // Baris untuk gambar dan teks Gula Darah
+            GestureDetector(
+              onTap: () {
+                // Navigasi ke halaman Gula Darah
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GulaDarahScreen(),
+                  ),
+                );
+              },
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: AssetImage('assets/images/gula_darah.png'),
+                    radius: 30, // Ukuran gambar
+                  ),
+                  SizedBox(width: 16), // Jarak antara gambar dan teks
+                  Text(
+                    'Cek Laborat',
                     style: TextStyle(fontSize: 18), // Tambah ukuran font
                   ),
                 ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'login_register_selection.dart';
 
 class RegisterScreen extends StatelessWidget {
@@ -9,31 +8,22 @@ class RegisterScreen extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> register(BuildContext context) async {
-    final url =
-        'https://jsonplaceholder.typicode.com/posts'; // Ganti dengan URL API Anda
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'username': usernameController.text,
-        'email': emailController.text,
-        'password': passwordController.text,
-      }),
+    String username = usernameController.text;
+    String email = emailController.text;
+    String password = passwordController.text;
+
+    // Simpan data pengguna di SharedPreferences
+    prefs.setString('username', username);
+    prefs.setString('email', email);
+    prefs.setString('password', password);
+
+    // Setelah berhasil, navigasi ke halaman login
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginRegisterSelection()),
     );
-
-    if (response.statusCode == 201) {
-      // JSONPlaceholder mengembalikan 201 untuk sukses
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginRegisterSelection()),
-      );
-    } else {
-      final errorMessage =
-          jsonDecode(response.body)['message'] ?? 'Terjadi kesalahan';
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(errorMessage)));
-    }
   }
 
   @override

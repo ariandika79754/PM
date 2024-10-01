@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../komponen/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -10,12 +11,27 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void login() {
-    // Simulasi login sukses
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
-    );
+  Future<void> login(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Ambil data pengguna yang tersimpan
+    String? savedUsername = prefs.getString('username');
+    String? savedPassword = prefs.getString('password');
+
+    // Verifikasi login
+    if (usernameController.text == savedUsername &&
+        passwordController.text == savedPassword) {
+      // Jika login berhasil, navigasi ke halaman HomeScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      // Jika akun tidak ditemukan atau salah, tampilkan pesan
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Akun Anda belum terdaftar atau password salah')),
+      );
+    }
   }
 
   @override
@@ -29,20 +45,17 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
             Image.asset('assets/images/logo.png', height: 100),
             SizedBox(height: 10),
-            // Teks Puskesla berwarna hijau
             Text(
               'PUSKESLA',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.green, // Warna teks hijau
+                color: Colors.green,
               ),
             ),
             SizedBox(height: 30),
-            // Input Username with rounded borders and black outline
             TextField(
               controller: usernameController,
               decoration: InputDecoration(
@@ -65,7 +78,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             SizedBox(height: 15),
-            // Input Password with rounded borders and black outline
             TextField(
               controller: passwordController,
               obscureText: true,
@@ -89,19 +101,18 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             SizedBox(height: 30),
-            // Tombol Login with white text and green background
             ElevatedButton(
-              onPressed: login,
+              onPressed: () => login(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green, // Warna hijau untuk tombol login
+                backgroundColor: Colors.green,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0), // Rounded button
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
               child: Text(
                 'Login',
-                style: TextStyle(color: Colors.white), // White text
+                style: TextStyle(color: Colors.white),
               ),
             ),
           ],
@@ -110,3 +121,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
