@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../komponen/home_screen.dart';
+import '../komponen/forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -10,6 +11,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _isPasswordVisible = false; // Menambahkan variable untuk mengontrol visibilitas password
 
   Future<void> login(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -29,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       // Jika akun tidak ditemukan atau salah, tampilkan pesan
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Akun Anda belum terdaftar atau password salah')),
+        SnackBar(content: Text('Akun Anda belum terdaftar atau username dan password salah')),
       );
     }
   }
@@ -80,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(height: 15),
             TextField(
               controller: passwordController,
-              obscureText: true,
+              obscureText: !_isPasswordVisible, // Menggunakan variabel untuk kontrol visibilitas password
               decoration: InputDecoration(
                 labelText: 'Password',
                 labelStyle: TextStyle(color: Colors.black),
@@ -98,9 +100,40 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 2.0,
                   ),
                 ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
               ),
             ),
-            SizedBox(height: 30),
+            SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  // Arahkan ke halaman lupa password
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                  );
+                },
+                child: Text(
+                  'Lupa Password?',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => login(context),
               style: ElevatedButton.styleFrom(
@@ -121,4 +154,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert'; // Untuk mengonversi data pasien ke format JSON
 import 'add_pasien_screen.dart';
 import 'detail_pasien_screen.dart';
 
@@ -8,7 +10,54 @@ class GulaDarahScreen extends StatefulWidget {
 }
 
 class _GulaDarahScreenState extends State<GulaDarahScreen> {
-  List<Map<String, dynamic>> pasienList = []; // List to hold all patient data
+  TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> pasienGulaDarahList =
+      []; // List untuk menyimpan data pasien
+  List<Map<String, dynamic>> filteredPasienGulaDarahList =
+      []; // List untuk menyimpan hasil filter
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPasienList(); // Memuat data pasien dari shared preferences
+    _searchController.addListener(
+        _filterPasienList); // Menambahkan listener pada search input
+  }
+
+  // Fungsi untuk memuat data pasien dari shared preferences
+  Future<void> _loadPasienList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? pasienData = prefs.getString('pasienGulaDarahList');
+    if (pasienData != null) {
+      setState(() {
+        pasienGulaDarahList =
+            List<Map<String, dynamic>>.from(json.decode(pasienData));
+        filteredPasienGulaDarahList = pasienGulaDarahList; // Set daftar filter
+      });
+    }
+  }
+
+  // Fungsi untuk menyimpan data pasien ke shared preferences
+  Future<void> _savePasienList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String pasienData = json.encode(pasienGulaDarahList);
+    await prefs.setString('pasienGulaDarahList', pasienData);
+  }
+
+  // Fungsi untuk memfilter daftar pasien berdasarkan nama
+  void _filterPasienList() {
+    setState(() {
+      String query = _searchController.text.toLowerCase();
+      if (query.isEmpty) {
+        filteredPasienGulaDarahList =
+            pasienGulaDarahList; // Jika tidak ada pencarian, tampilkan semua data
+      } else {
+        filteredPasienGulaDarahList = pasienGulaDarahList
+            .where((pasien) => pasien['nama'].toLowerCase().contains(query))
+            .toList(); // Filter pasien berdasarkan nama
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +73,12 @@ class _GulaDarahScreenState extends State<GulaDarahScreen> {
           children: [
             Row(
               children: [
-              
                 Expanded(
                   child: Container(
                     height: 40,
                     child: TextField(
+                      controller:
+                          _searchController, // Menghubungkan controller pencarian
                       decoration: InputDecoration(
                         contentPadding: EdgeInsets.symmetric(vertical: 0),
                         border: OutlineInputBorder(
@@ -46,12 +96,12 @@ class _GulaDarahScreenState extends State<GulaDarahScreen> {
             ),
             SizedBox(height: 20),
             Expanded(
-              child: pasienList.isEmpty
+              child: filteredPasienGulaDarahList.isEmpty
                   ? Center(child: Text("Belum Ada Data Pasien"))
                   : ListView.builder(
-                      itemCount: pasienList.length,
+                      itemCount: filteredPasienGulaDarahList.length,
                       itemBuilder: (context, index) {
-                        var pasien = pasienList[index];
+                        var pasien = filteredPasienGulaDarahList[index];
                         return ListTile(
                           leading: CircleAvatar(
                             backgroundImage:
@@ -60,7 +110,7 @@ class _GulaDarahScreenState extends State<GulaDarahScreen> {
                           title: Text(pasien['nama']),
                           subtitle: Text(pasien['tanggal']),
                           onTap: () {
-                            // Navigate to DetailPasienScreen when clicked
+                            // Navigasi ke DetailPasienScreen saat ditekan
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -88,8 +138,10 @@ class _GulaDarahScreenState extends State<GulaDarahScreen> {
 
           if (result != null && result is Map<String, dynamic>) {
             setState(() {
-              pasienList.add(result); // Add new patient to the list
+              pasienGulaDarahList
+                  .add(result); // Tambahkan pasien baru ke daftar
             });
+            _savePasienList(); // Simpan data ke shared preferences
           }
         },
         backgroundColor: Colors.green,

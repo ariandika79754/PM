@@ -127,9 +127,11 @@ class _IntroScreenState extends State<IntroScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
               ),
               onPressed: nextPage,
-              child: Text(currentIndex == introPages.length - 1
-                  ? 'Masuk'
-                  : 'Lanjutkan'),
+              child: Text(
+                currentIndex == introPages.length - 1 ? 'Masuk' : 'Lanjutkan',
+                style:
+                    TextStyle(color: Colors.white), // Tambahkan style di sini
+              ),
             ),
           ),
         ],

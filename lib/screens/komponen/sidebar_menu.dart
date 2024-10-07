@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class SidebarMenu extends StatelessWidget {
+  final Function(DateTimeRange) onFilterByDateRange;
+
+  SidebarMenu({required this.onFilterByDateRange});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -11,7 +15,6 @@ class SidebarMenu extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.blue,
             ),
-            // Menambahkan simbol X di pojok kanan atas
             child: Stack(
               children: [
                 Align(
@@ -30,10 +33,9 @@ class SidebarMenu extends StatelessWidget {
                 Align(
                   alignment: Alignment.bottomLeft,
                   child: Padding(
-                    padding: const EdgeInsets.only(
-                        bottom: 16.0), // Padding untuk kebawah sedikit
+                    padding: const EdgeInsets.only(bottom: 16.0),
                     child: Text(
-                      'Riwayat Terakhir',
+                      'Data Pasien',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
@@ -48,21 +50,39 @@ class SidebarMenu extends StatelessWidget {
             leading: Icon(Icons.calendar_today),
             title: Text('Minggu Ini'),
             onTap: () {
-              // Aksi saat "Minggu Ini" diklik
+              // Menghitung rentang tanggal minggu ini
+              DateTime now = DateTime.now();
+              DateTime startOfWeek =
+                  now.subtract(Duration(days: now.weekday - 1));
+              DateTime endOfWeek = startOfWeek.add(Duration(days: 6));
+              Navigator.pop(context); // Menutup drawer
+              onFilterByDateRange(
+                  DateTimeRange(start: startOfWeek, end: endOfWeek));
             },
           ),
           ListTile(
             leading: Icon(Icons.calendar_view_month),
             title: Text('Bulan Ini'),
             onTap: () {
-              // Aksi saat "Bulan Ini" diklik
+              DateTime now = DateTime.now();
+              DateTime startOfMonth = DateTime(now.year, now.month, 1);
+              DateTime endOfMonth =
+                  DateTime(now.year, now.month + 1, 0); // Akhir bulan
+              Navigator.pop(context);
+              onFilterByDateRange(
+                  DateTimeRange(start: startOfMonth, end: endOfMonth));
             },
           ),
           ListTile(
-            leading: Icon(Icons.event),
+            leading: Icon(Icons.calendar_today),
             title: Text('Tahun Ini'),
             onTap: () {
-              // Aksi saat "Tahun Ini" diklik
+              DateTime now = DateTime.now();
+              DateTime startOfYear = DateTime(now.year, 1, 1);
+              DateTime endOfYear = DateTime(now.year + 1, 1, 0); // Akhir tahun
+              Navigator.pop(context);
+              onFilterByDateRange(
+                  DateTimeRange(start: startOfYear, end: endOfYear));
             },
           ),
         ],

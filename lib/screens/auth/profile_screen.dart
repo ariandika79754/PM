@@ -1,89 +1,132 @@
 import 'package:flutter/material.dart';
-import 'login_register_selection.dart'; // Import halaman login/register
+import 'package:shared_preferences/shared_preferences.dart';
+import 'login_register_selection.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  TextEditingController _usernameController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData(); // Load data profile saat inisialisasi
+  }
+
+  Future<void> _loadProfileData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _usernameController.text = prefs.getString('username') ?? 'Poliklinik';
+      _emailController.text =
+          prefs.getString('email') ?? 'poliklinik@gmail.com';
+      _passwordController.text = prefs.getString('password') ?? '12345678';
+      _phoneController.text =
+          prefs.getString('phone') ?? ''; // Load nomor telepon
+    });
+  }
+
+  Future<void> _updateProfile() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Simpan data profil ke SharedPreferences
+    await prefs.setString('username', _usernameController.text);
+    await prefs.setString('email', _emailController.text);
+    await prefs.setString('password', _passwordController.text);
+    await prefs.setString('phone', _phoneController.text);
+
+    // Tampilkan pesan berhasil
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Profil berhasil diubah')),
+    );
+  }
+
+  Widget _buildEditableProfileItem(
+      String label, TextEditingController controller, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon, color: Colors.green), // Icon hijau
+          labelStyle: TextStyle(color: Colors.green),
+          enabledBorder: OutlineInputBorder(
+            borderSide:
+                BorderSide(color: Colors.green, width: 2.0), // Border hijau
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+                color: Colors.green, width: 2.0), // Border hijau saat fokus
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // Menghilangkan icon back
         title: Text('Profile'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // Action untuk update profil
-            },
-            child: Text(
-              'Update',
-              style: TextStyle(
-                  color: Colors.green, fontSize: 14), // ukuran font lebih kecil
-            ),
-          ),
-        ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(12.0), // Mengurangi padding keseluruhan
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            _buildProfileItem(Icons.person, 'Raihan Ardiansah'),
-            _buildProfileItem(Icons.lock, '12345678'),
-            _buildProfileItem(Icons.email, 'Raihan@Gmail.Com'),
-            _buildProfileItem(Icons.calendar_today, '06-03-2000'),
-            _buildProfileItem(Icons.transgender, 'Laki-Laki'),
-            _buildProfileItem(Icons.location_on, 'Jl. Raja Basa Maju Mundur'),
-            _buildProfileItem(Icons.phone, '089201019293'),
-            SizedBox(height: 10), // Mengurangi jarak antar elemen
-            _buildProfileItem(Icons.exit_to_app, 'Keluar',
-                isLogout: true, context: context), // Tambah context
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileItem(IconData icon, String text,
-      {bool isLogout = false, BuildContext? context}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-          vertical: 6.0), // Mengurangi jarak vertikal antar item
-      child: GestureDetector(
-        onTap: isLogout
-            ? () {
-                // Pindah ke halaman LoginRegisterSelection saat klik 'Keluar'
-                Navigator.pushReplacement(
-                  context!,
-                  MaterialPageRoute(
-                    builder: (context) => LoginRegisterSelection(),
-                  ),
-                );
-              }
-            : null, // Tidak ada aksi untuk item lain
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-                color: Colors.green, width: 1.5), // Lebar border lebih tipis
-            borderRadius: BorderRadius.circular(
-                20), // Radius lebih kecil agar lebih ringkas
-          ),
-          padding: EdgeInsets.symmetric(
-              vertical: 8, horizontal: 12), // Mengurangi padding dalam item
-          child: Row(
-            children: [
-              Icon(icon,
-                  color: Colors.green, size: 20), // Ukuran icon lebih kecil
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  text,
-                  style: TextStyle(
-                    fontSize: 14, // Ukuran teks lebih kecil
-                    fontWeight: FontWeight.w500,
-                    color: isLogout ? Colors.red : Colors.black,
-                  ),
+            // Menambahkan gambar klinik berbentuk lingkaran
+            CircleAvatar(
+              radius: 60,
+              backgroundImage: AssetImage('assets/images/klinik.jpg'),
+            ),
+            SizedBox(height: 20), // Spasi antara gambar dan kolom username
+            _buildEditableProfileItem(
+                'Username', _usernameController, Icons.person),
+            _buildEditableProfileItem(
+                'Password', _passwordController, Icons.lock),
+            _buildEditableProfileItem('Email', _emailController, Icons.email),
+            _buildEditableProfileItem(
+                'Nomor Telepon', _phoneController, Icons.phone),
+            SizedBox(height: 20),
+            // Tombol hijau untuk Update profil
+            ElevatedButton(
+              onPressed: _updateProfile, // Action untuk update profil
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    Colors.green, // Warna hijau untuk background tombol
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                      30.0), // Membuat tombol menjadi melengkung
                 ),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 40, vertical: 15), // Padding tombol
               ),
-            ],
-          ),
+              child: Text(
+                'Update',
+                style:
+                    TextStyle(color: Colors.white, fontSize: 16), // Teks putih
+              ),
+            ),
+            SizedBox(height: 20),
+            ListTile(
+              leading: Icon(Icons.exit_to_app, color: Colors.red),
+              title: Text('Keluar'),
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => LoginRegisterSelection()),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

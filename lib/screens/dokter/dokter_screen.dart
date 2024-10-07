@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
+import 'dart:convert'; // Untuk encode/decode JSON
+import 'detail_dokter_screen.dart'; // Import the detail screen
+import 'tambah_dokter_screen.dart'; // Import the add screen
 
 class DokterScreen extends StatefulWidget {
   @override
@@ -7,7 +11,53 @@ class DokterScreen extends StatefulWidget {
 
 class _DokterScreenState extends State<DokterScreen> {
   List<Map<String, dynamic>> dokterList = [];
+  List<Map<String, dynamic>> filteredDokterList =
+      []; // Daftar untuk menampung hasil filter
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDokterList(); // Load data dokter saat inisialisasi
+  }
+
+  // Fungsi untuk mengambil data dokter dari SharedPreferences
+  Future<void> _loadDokterList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? dokterString = prefs.getString('dokterList');
+    if (dokterString != null) {
+      setState(() {
+        dokterList = List<Map<String, dynamic>>.from(json.decode(dokterString));
+        filteredDokterList =
+            dokterList; // Inisialisasi daftar filter dengan daftar dokter
+      });
+    }
+  }
+
+  // Fungsi untuk menyimpan data dokter ke SharedPreferences
+  Future<void> _saveDokterList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String dokterString = json.encode(dokterList);
+    prefs.setString('dokterList', dokterString);
+  }
+
+  // Fungsi untuk memfilter daftar dokter berdasarkan pencarian
+  void _filterDokter(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredDokterList =
+            dokterList; // Tampilkan semua dokter jika query kosong
+      });
+    } else {
+      setState(() {
+        filteredDokterList = dokterList.where((dokter) {
+          return dokter['name']
+              .toLowerCase()
+              .contains(query.toLowerCase()); // Filter berdasarkan nama
+        }).toList();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +81,15 @@ class _DokterScreenState extends State<DokterScreen> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search Dokter',
+                      hintText: 'Cari Dokter',
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                     onChanged: (value) {
-                      // Tambahkan logika pencarian jika diperlukan
+                      _filterDokter(
+                          value); // Panggil fungsi filter saat input berubah
                     },
                   ),
                 ),
@@ -47,20 +98,41 @@ class _DokterScreenState extends State<DokterScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: dokterList.length,
+              itemCount:
+                  filteredDokterList.length, // Gunakan daftar hasil filter
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundImage: AssetImage(dokterList[index]['photo']),
+                    backgroundImage:
+                        AssetImage(filteredDokterList[index]['photo']),
                     radius: 30,
                   ),
-                  title: Text('Nama Dokter: ${dokterList[index]['name']}'),
+                  title:
+                      Text('Nama Dokter: ${filteredDokterList[index]['name']}'),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => DetailDokterScreen(
-                          dokter: dokterList[index],
+                          dokter: filteredDokterList[index],
+                          onDeleteDokter: (deletedDokter) {
+                            setState(() {
+                              dokterList.remove(
+                                  deletedDokter); // Hapus dokter dari daftar
+                              filteredDokterList.remove(
+                                  deletedDokter); // Hapus dari daftar filter
+                              _saveDokterList(); // Simpan setelah dihapus
+                            });
+                          },
+                          onEditDokter: (editedDokter) {
+                            setState(() {
+                              dokterList[index] =
+                                  editedDokter; // Perbarui dokter yang diedit
+                              filteredDokterList[index] =
+                                  editedDokter; // Perbarui daftar filter
+                              _saveDokterList(); // Simpan perubahan
+                            });
+                          },
                         ),
                       ),
                     );
@@ -76,190 +148,26 @@ class _DokterScreenState extends State<DokterScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => TambahDokterScreen(
-                      onAddDokter: (String name) {
-                        setState(() {
-                          dokterList.add({
-                            "name": name,
-                            "photo": 'assets/images/doctor1.png',
-                          });
-                        });
-                      },
-                    )),
+              builder: (context) => TambahDokterScreen(
+                onAddDokter: (String name) {
+                  setState(() {
+                    dokterList.add({
+                      "name": name,
+                      "photo": 'assets/images/doctor1.png',
+                    });
+                    filteredDokterList.add({
+                      "name": name,
+                      "photo": 'assets/images/doctor1.png',
+                    }); // Tambahkan dokter ke daftar filter
+                    _saveDokterList(); // Simpan daftar dokter setelah penambahan
+                  });
+                },
+              ),
+            ),
           );
         },
         backgroundColor: Colors.green,
         child: Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class DetailDokterScreen extends StatelessWidget {
-  final Map<String, dynamic> dokter;
-
-  DetailDokterScreen({required this.dokter});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Detail Dokter'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow('Nama Dokter', dokter['name']),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Tambahkan logika edit dokter
-                },
-                icon: Icon(
-                  Icons.edit,
-                  size: 18,
-                ),
-                label: Text('Edit'),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('Hapus Dokter'),
-                      content:
-                          Text('Apakah Anda yakin ingin menghapus dokter ini?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text('Batal'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            // Logika hapus dokter dari daftar
-                          },
-                          child: Text('Hapus'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                icon: Icon(
-                  Icons.delete,
-                  size: 18,
-                ),
-                label: Text('Hapus'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '$label',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          Text(': $value'),
-        ],
-      ),
-    );
-  }
-}
-
-class TambahDokterScreen extends StatelessWidget {
-  final Function(String) onAddDokter;
-
-  TambahDokterScreen({required this.onAddDokter});
-
-  final TextEditingController _nameController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Tambah Dokter'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              onAddDokter(_nameController.text);
-              Navigator.pop(context);
-            },
-            child: Text(
-              'Simpan',
-              style: TextStyle(color: Colors.green, fontSize: 16),
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildInputField(Icons.person, 'Nama Dokter', _nameController),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputField(
-      IconData icon, String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.green, width: 2),
-          borderRadius: BorderRadius.circular(25),
-        ),
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.green),
-            SizedBox(width: 10),
-            Expanded(
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  hintText: label,
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

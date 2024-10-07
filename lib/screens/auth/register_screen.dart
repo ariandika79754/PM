@@ -2,10 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_register_selection.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  bool _isPasswordVisible = false; // Untuk mengontrol visibilitas password
 
   Future<void> register(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -82,7 +89,7 @@ class RegisterScreen extends StatelessWidget {
             SizedBox(height: 15),
             TextField(
               controller: passwordController,
-              obscureText: true,
+              obscureText: !_isPasswordVisible, // Kontrol visibilitas password
               decoration: InputDecoration(
                 labelText: 'Password',
                 labelStyle: TextStyle(color: Colors.black),
@@ -93,6 +100,18 @@ class RegisterScreen extends StatelessWidget {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
                   borderSide: BorderSide(color: Colors.black, width: 2.0),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
                 ),
               ),
             ),

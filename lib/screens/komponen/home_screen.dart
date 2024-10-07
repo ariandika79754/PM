@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/komponen/custom_bottom_nav.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'sidebar_menu.dart';
 import '../pasien/pasien_screen.dart'; // Import PasienScreen
 import 'dokumen_screen.dart'; // Import DokumenScreen
@@ -43,10 +46,14 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ),
-      drawer: SidebarMenu(), // SidebarMenu for navigation
+      drawer: SidebarMenu(
+        onFilterByDateRange: (DateTimeRange range) {
+          // Add your logic to filter data by date range here
+          print("Selected range: ${range.start} - ${range.end}");
+        },
+      ),
       body: Column(
         children: [
-          // Menambahkan gambar doctor di bawah icon menu (AppBar)
           Expanded(
             child: _widgetOptions[_selectedIndex], // Menampilkan konten utama
           ),
@@ -101,7 +108,6 @@ class _HomeContentState extends State<HomeContent> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Center(
-                    // Use SizedBox to adjust image size
                     child: SizedBox(
                       width: 330, // Sesuaikan lebar gambar
                       height: 330, // Sesuaikan tinggi gambar
@@ -134,7 +140,64 @@ class _HomeContentState extends State<HomeContent> {
           }),
         ),
         SizedBox(height: 16),
+        // Menambahkan teks "Riwayat Pasien"
+        Text(
+          'Riwayat Pasien',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 16), // Jarak sebelum teks "Riwayat Pasien"
+        // Menampilkan daftar pasien
+        Expanded(
+          child: FutureBuilder<List<String>>(
+            future: _fetchPatientNames(), // Mengambil nama pasien
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (snapshot.hasData) {
+                final patientNames = snapshot.data!;
+                return ListView.builder(
+                  itemCount: patientNames.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4.0), // Jarak vertikal
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: AssetImage(
+                              'assets/images/pasien.jpg'), // Ganti dengan path foto pasien
+                          radius: 25, // Atur radius lingkaran
+                        ),
+                        title: Text(patientNames[index]),
+                      ),
+                    );
+                  },
+                );
+              } else {
+                return Center(child: Text('No patients found.'));
+              }
+            },
+          ),
+        ),
       ],
     );
+  }
+
+  Future<List<String>> _fetchPatientNames() async {
+    // Mengambil daftar pasien dari SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? pasienString = prefs.getString('pasienList');
+    if (pasienString != null) {
+      List<dynamic> pasienList = json.decode(pasienString);
+      // Pastikan untuk mengonversi ke List<String>
+      return pasienList
+          .map<String>((pasien) => pasien['name'].toString())
+          .toList();
+    }
+    return []; // Mengembalikan list kosong jika tidak ada data
   }
 }
