@@ -90,7 +90,7 @@ class DokumenScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 16), // Jarak antara gambar dan teks
                   Text(
-                    'Cek Laborat',
+                    'Cek Laboratorium',
                     style: TextStyle(fontSize: 18), // Tambah ukuran font
                   ),
                 ],

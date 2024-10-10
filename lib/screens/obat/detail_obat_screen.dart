@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'dart:io';
 import 'tambah_obat_screen.dart';
 
 class DetailObatScreen extends StatelessWidget {
@@ -67,7 +71,7 @@ class DetailObatScreen extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.print, color: Colors.black),
               onPressed: () {
-                // Aksi print
+                generatePdf(context); // Mengirimkan context
               },
             ),
           ],
@@ -78,15 +82,48 @@ class DetailObatScreen extends StatelessWidget {
 
   Widget _buildInfoRow(String label, String value) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.start, // Ubah ke start
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        SizedBox(width: 5), // Jarak kecil antara label dan titik dua
-        Text(': $value'), // Titik dua dan nilai
+        SizedBox(width: 5),
+        Text(': $value'),
       ],
+    );
+  }
+
+  Future<void> generatePdf(BuildContext context) async {
+    final pdf = pw.Document();
+
+    // Membuat konten PDF
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('Detail Obat', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Text('Nama Obat: ${obat['name']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Stok: ${obat['stok']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Keterangan: ${obat['keterangan']}', style: pw.TextStyle(fontSize: 18)),
+          ],
+        ),
+      ),
+    );
+
+    // Simpan file PDF ke direktori aplikasi
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/detail_obat.pdf');
+
+    await file.writeAsBytes(await pdf.save());
+
+    // Menampilkan pesan bahwa file berhasil disimpan
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('PDF berhasil diunduh di ${file.path}')),
     );
   }
 }

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For formatting the selected date
 
 class AddPasienScreen extends StatefulWidget {
+  final Map<String, dynamic>? pasienData; // Data pasien untuk di-edit
+
+  AddPasienScreen({this.pasienData}); // Bisa null jika tambah baru
+
   @override
   _AddPasienScreenState createState() => _AddPasienScreenState();
 }
@@ -25,14 +29,43 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
   TextEditingController asamUratController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Jika ada data pasien, isi form dengan data tersebut
+    if (widget.pasienData != null) {
+      namaController.text = widget.pasienData!['nama'];
+      dateController.text = widget.pasienData!['tanggal'];
+      selectedStatus = widget.pasienData!['status'];
+      showProdiJurusan = (selectedStatus == 'Mahasiswa');
+      prodiController.text = widget.pasienData!['prodi'];
+      jurusanController.text = widget.pasienData!['jurusan'];
+      gulaDarahController.text = widget.pasienData!['gula_darah'];
+      tensiController.text = widget.pasienData!['tensi'];
+      kolestrolController.text = widget.pasienData!['kolestrol'];
+      asamUratController.text = widget.pasienData!['asam_urat'];
+      keteranganController.text = widget.pasienData!['keterangan'];
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tambah Pasien'),
+        title: Text(widget.pasienData == null ? 'Tambah Pasien' : 'Edit Pasien'),
         actions: [
           TextButton(
             onPressed: () {
-              // Logic to save data when the Save button is pressed
+              // Validasi sebelum menyimpan
+              if (namaController.text.isEmpty ||
+                  dateController.text.isEmpty ||
+                  selectedStatus == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Semua field harus diisi!')),
+                );
+                return;
+              }
+
+              // Data yang akan disimpan
               Map<String, dynamic> pasienData = {
                 "nama": namaController.text,
                 "tanggal": dateController.text,
@@ -86,9 +119,7 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
                 SizedBox(height: 10),
                 _buildTextField(jurusanController, Icons.school, "Jurusan"),
                 SizedBox(height: 10),
-              ],
-              _buildTextField(keteranganController, Icons.note, "Keterangan"),
-              SizedBox(height: 10),
+              ],            
               _buildTextField(gulaDarahController, Icons.health_and_safety,
                   "Cek Gula Darah"),
               SizedBox(height: 10),
@@ -98,6 +129,9 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
                   "Kolestrol"),
               SizedBox(height: 10),
               _buildTextField(asamUratController, Icons.warning, "Asam Urat"),
+              SizedBox(height: 10),
+              _buildTextField(keteranganController, Icons.note, "Keterangan"),
+              
             ],
           ),
         ),

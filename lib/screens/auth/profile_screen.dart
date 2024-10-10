@@ -77,56 +77,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
         automaticallyImplyLeading: false, // Menghilangkan icon back
         title: Text('Profile'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          children: [
-            // Menambahkan gambar klinik berbentuk lingkaran
-            CircleAvatar(
-              radius: 60,
-              backgroundImage: AssetImage('assets/images/klinik.jpg'),
-            ),
-            SizedBox(height: 20), // Spasi antara gambar dan kolom username
-            _buildEditableProfileItem(
-                'Username', _usernameController, Icons.person),
-            _buildEditableProfileItem(
-                'Password', _passwordController, Icons.lock),
-            _buildEditableProfileItem('Email', _emailController, Icons.email),
-            _buildEditableProfileItem(
-                'Nomor Telepon', _phoneController, Icons.phone),
-            SizedBox(height: 20),
-            // Tombol hijau untuk Update profil
-            ElevatedButton(
-              onPressed: _updateProfile, // Action untuk update profil
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    Colors.green, // Warna hijau untuk background tombol
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                      30.0), // Membuat tombol menjadi melengkung
+      body: SingleChildScrollView( // Menambahkan kemampuan scroll
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            children: [
+              // Menambahkan gambar klinik berbentuk lingkaran
+              CircleAvatar(
+                radius: 60,
+                backgroundImage: AssetImage('assets/images/klinik.jpg'),
+              ),
+              SizedBox(height: 20), // Spasi antara gambar dan kolom username
+              _buildEditableProfileItem(
+                  'Username', _usernameController, Icons.person),
+              _buildEditableProfileItem(
+                  'Password', _passwordController, Icons.lock),
+              _buildEditableProfileItem(
+                  'Email', _emailController, Icons.email),
+              _buildEditableProfileItem(
+                  'Nomor Telepon', _phoneController, Icons.phone),
+              SizedBox(height: 20),
+              // Tombol hijau untuk Update profil
+              ElevatedButton(
+                onPressed: _updateProfile, // Action untuk update profil
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      Colors.green, // Warna hijau untuk background tombol
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                        30.0), // Membuat tombol menjadi melengkung
+                  ),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 40, vertical: 15), // Padding tombol
                 ),
-                padding: EdgeInsets.symmetric(
-                    horizontal: 40, vertical: 15), // Padding tombol
+                child: Text(
+                  'Update',
+                  style:
+                      TextStyle(color: Colors.white, fontSize: 16), // Teks putih
+                ),
               ),
-              child: Text(
-                'Update',
-                style:
-                    TextStyle(color: Colors.white, fontSize: 16), // Teks putih
+              SizedBox(height: 20),
+              ListTile(
+                leading: Icon(Icons.exit_to_app, color: Colors.red),
+                title: Text('Keluar'),
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => LoginRegisterSelection()),
+                  );
+                },
               ),
-            ),
-            SizedBox(height: 20),
-            ListTile(
-              leading: Icon(Icons.exit_to_app, color: Colors.red),
-              title: Text('Keluar'),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => LoginRegisterSelection()),
-                );
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

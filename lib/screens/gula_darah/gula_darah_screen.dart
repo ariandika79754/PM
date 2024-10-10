@@ -103,24 +103,48 @@ class _GulaDarahScreenState extends State<GulaDarahScreen> {
                       itemBuilder: (context, index) {
                         var pasien = filteredPasienGulaDarahList[index];
                         return ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage:
-                                AssetImage('assets/images/gula_darah.png'),
-                          ),
-                          title: Text(pasien['nama']),
-                          subtitle: Text(pasien['tanggal']),
-                          onTap: () {
-                            // Navigasi ke DetailPasienScreen saat ditekan
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DetailPasienScreen(
-                                  pasienData: pasien,
-                                ),
-                              ),
-                            );
-                          },
-                        );
+  leading: CircleAvatar(
+    backgroundImage: AssetImage('assets/images/gula_darah.png'),
+  ),
+  title: Text(pasien['nama']),
+  subtitle: Text(pasien['tanggal']),
+  onTap: () {
+    // Navigasi ke DetailPasienScreen dengan callback edit dan delete
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailPasienScreen(
+          pasienData: pasien,
+          onDelete: () {
+            setState(() {
+              pasienGulaDarahList.removeAt(index); // Hapus data
+            });
+            _savePasienList(); // Simpan perubahan
+          },
+          onEdit: (editedData) async {
+            // Navigasi ke halaman AddPasienScreen dengan data yang ingin diedit
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddPasienScreen(
+                  pasienData: pasien,
+                ),
+              ),
+            );
+
+            if (result != null && result is Map<String, dynamic>) {
+              setState(() {
+                pasienGulaDarahList[index] = result; // Update data
+              });
+              _savePasienList(); // Simpan perubahan
+            }
+          },
+        ),
+      ),
+    );
+  },
+);
+
                       },
                     ),
             ),

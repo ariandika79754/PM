@@ -33,7 +33,7 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
   String? _selectedJurusan;
 
   final List<String> _prodiOptions = [
-    'ti',
+    'TI (Teknologi Informasi)',
     'ekbis',
     'kebun',
     'ternak',
@@ -116,62 +116,67 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildInputField(_namaController, Icons.person, 'Nama Lengkap'),
-            _buildInputField(_umurController, Icons.calendar_today, 'Umur'),
-            _buildInputField(
-                _diagnosaController, Icons.local_hospital, 'Diagnosa'),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Column(
+              children: [
+                _buildInputField(_namaController, Icons.person, 'Nama Lengkap'),
+                _buildInputField(_umurController, Icons.calendar_today, 'Umur'),
+                _buildInputField(
+                    _diagnosaController, Icons.local_hospital, 'Diagnosa'),
 
-            // Dropdown untuk status
-            _buildDropdown(['pegawai', 'mahasiswa'], _status, 'Pilih Status',
-                (newValue) {
-              setState(() {
-                _status = newValue;
-              });
-            }),
+                // Dropdown untuk status
+                _buildDropdown(['pegawai', 'mahasiswa'], _status, 'Pilih Status',
+                    (newValue) {
+                  setState(() {
+                    _status = newValue;
+                  });
+                }),
 
-            // Tampilkan dropdown prodi dan jurusan jika status mahasiswa
-            if (_status == 'mahasiswa') ...[
-              _buildInputField(_selectedProdiController, Icons.school, 'Prodi'),
-              _buildDropdown(_prodiOptions, _selectedJurusan, 'Pilih Jurusan',
-                  (newValue) {
-                setState(() {
-                  _selectedJurusan = newValue;
-                });
-              }),
-            ],
+                // Tampilkan dropdown prodi dan jurusan jika status mahasiswa
+                if (_status == 'mahasiswa') ...[
+                  _buildInputField(
+                      _selectedProdiController, Icons.school, 'Prodi'),
+                  _buildDropdown(_prodiOptions, _selectedJurusan, 'Pilih Jurusan',
+                      (newValue) {
+                    setState(() {
+                      _selectedJurusan = newValue;
+                    });
+                  }),
+                ],
 
-            // Dropdown untuk obat dengan tambahan opsi "-"
-            _buildDropdown(
-                ['-'] +
-                    widget.obatList
-                        .map((obat) => obat['name'].toString())
-                        .toList(),
-                _selectedObat,
-                'Pilih Obat', (newValue) {
-              setState(() {
-                _selectedObat = newValue;
-              });
-            }),
+                // Dropdown untuk obat dengan tambahan opsi "-"
+                _buildDropdown(
+                    ['-'] +
+                        widget.obatList
+                            .map((obat) => obat['name'].toString())
+                            .toList(),
+                    _selectedObat,
+                    'Pilih Obat', (newValue) {
+                  setState(() {
+                    _selectedObat = newValue;
+                  });
+                }),
 
-            _buildInputField(_jumlahObatController, Icons.confirmation_number,
-                'Jumlah Obat'),
-            _buildDropdown(
-                ['-'] +
-                    widget.dokterList
-                        .map((dokter) => dokter['name'].toString())
-                        .toList(),
-                _selectedDokter,
-                'Pilih Dokter', (newValue) {
-              setState(() {
-                _selectedDokter = newValue;
-              });
-            }),
-            _buildInputField(_catatanController, Icons.note, 'Catatan'),
-          ],
+                _buildInputField(_jumlahObatController, Icons.confirmation_number,
+                    'Jumlah Obat'),
+                _buildDropdown(
+                    ['-'] +
+                        widget.dokterList
+                            .map((dokter) => dokter['name'].toString())
+                            .toList(),
+                    _selectedDokter,
+                    'Pilih Dokter', (newValue) {
+                  setState(() {
+                    _selectedDokter = newValue;
+                  });
+                }),
+                _buildInputField(_catatanController, Icons.note, 'Catatan'),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -180,7 +185,7 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
   Widget _buildInputField(
       TextEditingController controller, IconData icon, String label) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0), // Kurangi padding
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
@@ -201,7 +206,7 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
   Widget _buildDropdown(List<String> items, String? selectedItem, String hint,
       Function(String?) onChanged) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0), // Kurangi padding
       child: DropdownButtonFormField<String>(
         decoration: InputDecoration(
           labelText: hint,
