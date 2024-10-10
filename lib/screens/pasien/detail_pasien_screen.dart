@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class DetailPasienScreen extends StatelessWidget {
   final Map<String, dynamic> pasien;
@@ -60,7 +64,7 @@ class DetailPasienScreen extends StatelessWidget {
                   icon: Icon(Icons.print),
                   label: Text('Print'),
                   onPressed: () {
-                    _printData(); // Memanggil fungsi cetak data pasien
+                    _generatePdf(context); // Memanggil fungsi cetak PDF
                   },
                 ),
               ],
@@ -71,18 +75,50 @@ class DetailPasienScreen extends StatelessWidget {
     );
   }
 
-  // Fungsi untuk mencetak data pasien
-  void _printData() {
-    print('Data Pasien:');
-    print('Tanggal: ${pasien['tanggal']}');
-    print('Nama: ${pasien['name']}');
-    print('Umur: ${pasien['umur']}');
-    print('Status: ${pasien['status']}');
-    print('Diagnosa: ${pasien['diagnosa']}');
-    print('Obat: ${pasien['obat']}');
-    print('Jumlah Obat: ${pasien['jumlah_obat']}');
-    print('Dokter: ${pasien['dokter']}');
-    print('Catatan: ${pasien['catatan']}');
+  // Fungsi untuk mencetak data pasien ke PDF
+  Future<void> _generatePdf(BuildContext context) async {
+    final pdf = pw.Document();
+
+    // Membuat konten PDF
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('Detail Pasien', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Text('Nama: ${pasien['name']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Tanggal: ${pasien['tanggal']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Umur: ${pasien['umur']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Status: ${pasien['status']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Diagnosa: ${pasien['diagnosa']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Obat: ${pasien['obat']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Jumlah Obat: ${pasien['jumlah_obat']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Dokter: ${pasien['dokter']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 5),
+            pw.Text('Catatan: ${pasien['catatan']}', style: pw.TextStyle(fontSize: 18)),
+          ],
+        ),
+      ),
+    );
+
+    // Simpan file PDF ke direktori aplikasi
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/detail_pasien.pdf');
+
+    await file.writeAsBytes(await pdf.save());
+
+    // Menampilkan pesan bahwa file berhasil disimpan
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('PDF berhasil diunduh di ${file.path}')),
+    );
   }
 
   // Fungsi untuk menampilkan dialog konfirmasi hapus
