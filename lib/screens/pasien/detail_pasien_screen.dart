@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
+import 'package:open_file/open_file.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'tambah_pasien_screen.dart';
 
 class DetailPasienScreen extends StatelessWidget {
   final Map<String, dynamic> pasien;
   final Function(Map<String, dynamic>) onDelete; // Callback untuk hapus data
+  final Function(Map<String, dynamic>) onUpdate; // Callback untuk update data
 
-  DetailPasienScreen({required this.pasien, required this.onDelete});
+  DetailPasienScreen({required this.pasien, required this.onDelete, required this.onUpdate});
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +32,10 @@ class DetailPasienScreen extends StatelessWidget {
             SizedBox(height: 8),
             Text('Status         : ${pasien['status']}'),
             SizedBox(height: 8),
+            Text('Prodi         : ${pasien['prodi']}'),
+            SizedBox(height: 8),
+            Text('Jurusan       : ${pasien['jurusan']}'),
+             SizedBox(height: 8),
             Text('Diagnosa       : ${pasien['diagnosa']}'),
             SizedBox(height: 8),
             Text('Obat           : ${pasien['obat']}'),
@@ -38,7 +45,7 @@ class DetailPasienScreen extends StatelessWidget {
             Text('Dokter         : ${pasien['dokter']}'),
             SizedBox(height: 8),
             Text('Catatan        : ${pasien['catatan']}'),
-            Spacer(), // Menambahkan spacer untuk mendorong tombol ke bawah
+            Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -46,25 +53,37 @@ class DetailPasienScreen extends StatelessWidget {
                   icon: Icon(Icons.edit),
                   label: Text('Edit'),
                   onPressed: () {
-                    // Logika untuk tombol edit (bisa diarahkan ke form edit jika diperlukan)
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TambahPasienScreen(
+                          onAddPasien: (updatedPasien) {
+                            onUpdate(updatedPasien); // Panggil onUpdate dengan pasien baru
+                            Navigator.of(context).pop(); // Kembali
+                          },
+                          pasien: pasien, // Kirim data pasien untuk diedit
+                          obatList: [], // Isi dengan daftar obat yang tersedia
+                          dokterList: [], // Isi dengan daftar dokter yang tersedia
+                        ),
+                      ),
+                    );
                   },
                 ),
                 ElevatedButton.icon(
                   icon: Icon(Icons.delete),
                   label: Text('Delete'),
                   onPressed: () {
-                    _showDeleteConfirmationDialog(
-                        context); // Memunculkan dialog konfirmasi hapus
+                    _showDeleteConfirmationDialog(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red, // Warna tombol delete
+                    backgroundColor: Colors.red,
                   ),
                 ),
                 ElevatedButton.icon(
                   icon: Icon(Icons.print),
                   label: Text('Print'),
                   onPressed: () {
-                    _generatePdf(context); // Memanggil fungsi cetak PDF
+                    _generatePdf(context);
                   },
                 ),
               ],
@@ -75,76 +94,69 @@ class DetailPasienScreen extends StatelessWidget {
     );
   }
 
-  // Fungsi untuk mencetak data pasien ke PDF
   Future<void> _generatePdf(BuildContext context) async {
-    final pdf = pw.Document();
+  final pdf = pw.Document();
 
-    // Membuat konten PDF
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) => pw.Column(
+  pdf.addPage(
+    pw.Page(
+      build: (pw.Context context) {
+        return pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('Detail Pasien', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            pw.Text('Detail Pasien', style: pw.TextStyle(fontSize: 24)),
+            pw.SizedBox(height: 20),
+            pw.Text('Nama           : ${pasien['name']}', style: pw.TextStyle(fontSize: 18)),
             pw.SizedBox(height: 10),
-            pw.Text('Nama: ${pasien['name']}', style: pw.TextStyle(fontSize: 18)),
-            pw.SizedBox(height: 5),
-            pw.Text('Tanggal: ${pasien['tanggal']}', style: pw.TextStyle(fontSize: 18)),
-            pw.SizedBox(height: 5),
-            pw.Text('Umur: ${pasien['umur']}', style: pw.TextStyle(fontSize: 18)),
-            pw.SizedBox(height: 5),
-            pw.Text('Status: ${pasien['status']}', style: pw.TextStyle(fontSize: 18)),
-            pw.SizedBox(height: 5),
-            pw.Text('Diagnosa: ${pasien['diagnosa']}', style: pw.TextStyle(fontSize: 18)),
-            pw.SizedBox(height: 5),
-            pw.Text('Obat: ${pasien['obat']}', style: pw.TextStyle(fontSize: 18)),
-            pw.SizedBox(height: 5),
-            pw.Text('Jumlah Obat: ${pasien['jumlah_obat']}', style: pw.TextStyle(fontSize: 18)),
-            pw.SizedBox(height: 5),
-            pw.Text('Dokter: ${pasien['dokter']}', style: pw.TextStyle(fontSize: 18)),
-            pw.SizedBox(height: 5),
-            pw.Text('Catatan: ${pasien['catatan']}', style: pw.TextStyle(fontSize: 18)),
+            pw.Text('Tanggal        : ${pasien['tanggal']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 10),
+            pw.Text('Umur           : ${pasien['umur']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 10),
+            pw.Text('Status         : ${pasien['status']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 10),
+            pw.Text('Diagnosa       : ${pasien['diagnosa']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 10),
+            pw.Text('Obat           : ${pasien['obat']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 10),
+            pw.Text('Jumlah Obat    : ${pasien['jumlah_obat']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 10),
+            pw.Text('Dokter         : ${pasien['dokter']}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 10),
+            pw.Text('Catatan        : ${pasien['catatan']}', style: pw.TextStyle(fontSize: 18)),
           ],
-        ),
-      ),
-    );
+        ); 
+      },
+    ),
+  );
 
-    // Simpan file PDF ke direktori aplikasi
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/detail_pasien.pdf');
+  // Simpan PDF
+  final output = await getTemporaryDirectory();
+  final file = File("${output.path}/detail_pasien_${pasien['name']}.pdf");
+  await file.writeAsBytes(await pdf.save());
+  OpenFile.open(file.path); // Buka PDF setelah disimpan
+}
 
-    await file.writeAsBytes(await pdf.save());
 
-    // Menampilkan pesan bahwa file berhasil disimpan
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('PDF berhasil diunduh di ${file.path}')),
-    );
-  }
-
-  // Fungsi untuk menampilkan dialog konfirmasi hapus
   void _showDeleteConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Konfirmasi Hapus'),
-          content: Text('Apakah Anda yakin ingin menghapus data pasien ini?'),
+          content: Text('Apakah Anda yakin ingin menghapus pasien ini?'),
           actions: [
             TextButton(
-              child: Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup dialog
               },
+              child: Text('Batal'),
             ),
             TextButton(
-              child: Text('Yes'),
               onPressed: () {
-                // Ketika OK ditekan, hapus pasien dan kembali ke halaman PasienScreen
-                onDelete(pasien); // Menghapus pasien
-                Navigator.of(context).pop(); // Tutup dialog konfirmasi
-                Navigator.of(context)
-                    .pop(true); // Kembali ke halaman sebelumnya (PasienScreen)
+                onDelete(pasien); // Panggil fungsi hapus
+                Navigator.of(context).pop(); // Tutup dialog
+                Navigator.of(context).pop(true); // Kembali ke PasienScreen
               },
+              child: Text('Hapus'),
             ),
           ],
         );

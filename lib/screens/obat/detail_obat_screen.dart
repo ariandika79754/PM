@@ -3,6 +3,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
+import 'package:open_file/open_file.dart';
 import 'tambah_obat_screen.dart';
 
 class DetailObatScreen extends StatelessWidget {
@@ -121,9 +122,12 @@ class DetailObatScreen extends StatelessWidget {
 
     await file.writeAsBytes(await pdf.save());
 
-    // Menampilkan pesan bahwa file berhasil disimpan
+    // Buka file PDF yang sudah disimpan
+    await OpenFile.open(file.path);
+
+    // Menampilkan pesan bahwa file berhasil disimpan dan dibuka
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('PDF berhasil diunduh di ${file.path}')),
+      SnackBar(content: Text('PDF berhasil dibuat dan dibuka di ${file.path}')),
     );
   }
 }

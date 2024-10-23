@@ -5,7 +5,6 @@ import 'tambah_pasien_screen.dart';
 import 'detail_pasien_screen.dart';
 
 class PasienScreen extends StatefulWidget {
-  
   @override
   _PasienScreenState createState() => _PasienScreenState();
 }
@@ -66,6 +65,18 @@ class _PasienScreenState extends State<PasienScreen> {
     });
   }
 
+  void _updatePasien(Map<String, dynamic> updatedPasien) {
+  setState(() {
+    int index = pasienList.indexWhere((p) => p['id'] == updatedPasien['id']); // Ganti 'id' dengan atribut unik
+    if (index != -1) {
+      pasienList[index] = updatedPasien;
+    }
+    filteredPasienList = pasienList;
+    _savePasienList();
+  });
+}
+
+
   void _savePasienList() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String pasienString = json.encode(pasienList);
@@ -76,11 +87,10 @@ class _PasienScreenState extends State<PasienScreen> {
     setState(() {
       pasienList.remove(pasienToDelete);
       filteredPasienList = pasienList;
-      _savePasienList(); // Simpan list pasien yang sudah diperbarui
+      _savePasienList();
     });
   }
 
-  // Fungsi untuk memfilter daftar pasien berdasarkan input pencarian
   void _filterPasienList() {
     String query = _searchController.text.toLowerCase();
     setState(() {
@@ -92,9 +102,9 @@ class _PasienScreenState extends State<PasienScreen> {
 
   String _getPatientPhoto(String status) {
     if (status == 'mahasiswa') {
-      return 'assets/images/doctor1.png'; // Gambar untuk mahasiswa
+      return 'assets/images/mahasiswa.png';
     } else {
-      return 'assets/images/doctor3.png'; // Gambar untuk pegawai
+      return 'assets/images/staff.png';
     }
   }
 
@@ -128,9 +138,8 @@ class _PasienScreenState extends State<PasienScreen> {
         itemCount: filteredPasienList.length,
         itemBuilder: (context, index) {
           final pasien = filteredPasienList[index];
-          final status = pasien['status'] ?? 'pegawai'; // Default pegawai
-          final photoPath =
-              _getPatientPhoto(status); // Ambil gambar berdasarkan status
+          final status = pasien['status'] ?? 'pegawai';
+          final photoPath = _getPatientPhoto(status);
 
           return ListTile(
             leading: CircleAvatar(
@@ -145,14 +154,16 @@ class _PasienScreenState extends State<PasienScreen> {
                   builder: (context) => DetailPasienScreen(
                     pasien: pasien,
                     onDelete: (deletedPasien) {
-                      _deletePasien(deletedPasien); // Hapus pasien
+                      _deletePasien(deletedPasien);
+                    },
+                    onUpdate: (updatedPasien) {
+                      _updatePasien(updatedPasien); // Update pasien
                     },
                   ),
                 ),
               );
 
               if (result == true) {
-                // Jika pasien berhasil dihapus, perbarui UI
                 setState(() {});
               }
             },

@@ -65,10 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
-
-// This is the Home content (doctor images)
-class HomeContent extends StatefulWidget {
+}class HomeContent extends StatefulWidget {
   @override
   _HomeContentState createState() => _HomeContentState();
 }
@@ -76,6 +73,7 @@ class HomeContent extends StatefulWidget {
 class _HomeContentState extends State<HomeContent> {
   int _currentPage = 0;
   final PageController _pageController = PageController();
+  String _searchQuery = ''; // Variabel untuk menyimpan teks pencarian
 
   // Daftar gambar
   final List<String> _images = [
@@ -86,72 +84,105 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // PageView untuk gambar dokter, berada tepat di bawah AppBar
-        Container(
-          height: 250, // Atur tinggi gambar
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            itemCount: _images.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: SizedBox(
-                      width: 330, // Sesuaikan lebar gambar
-                      height: 330, // Sesuaikan tinggi gambar
-                      child: Image.asset(
-                        _images[index],
-                        fit: BoxFit.contain,
+    return SingleChildScrollView( // Membungkus seluruh konten dengan SingleChildScrollView
+      child: Column(
+        children: [
+          // Tambahkan teks Puskesla di sini, di atas gambar dan sedikit ke tengah dari pinggir kiri
+          Padding(
+            padding: const EdgeInsets.only(left: 35.0, top: 8.0), // Menambahkan padding kiri dan atas
+            child: Align(
+              alignment: Alignment.centerLeft, // Mengatur posisi teks di kiri
+              child: Text(
+                'Puskesla', // Teks Puskesla
+                style: TextStyle(
+                  fontSize: 34, // Ukuran font
+                  fontFamily: 'Times New Roman', // Font Latin
+                  color: Colors.green, // Warna hijau
+                ),
+              ),
+            ),
+          ),
+          // TextField untuk pencarian
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Padding di kiri dan kanan
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Cari riwayat pasien...', // Placeholder untuk kolom pencarian
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0), // Mengatur border TextField
+                ),
+                prefixIcon: Icon(Icons.search), // Ikon pencarian
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value; // Update nilai pencarian
+                });
+              },
+            ),
+          ),
+          // PageView untuk gambar dokter, berada tepat di bawah teks Puskesla
+          Container(
+            height: 250, // Atur tinggi gambar
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              itemCount: _images.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
+                      child: SizedBox(
+                        width: 330, // Sesuaikan lebar gambar
+                        height: 330, // Sesuaikan tinggi gambar
+                        child: Image.asset(
+                          _images[index],
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   ),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: 16), // Jarak antara gambar dan dots indicator
+          // Dots indikator untuk menunjukkan gambar mana yang aktif
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_images.length, (index) {
+              return AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                margin: EdgeInsets.symmetric(horizontal: 4),
+                width: _currentPage == index ? 12 : 8,
+                height: _currentPage == index ? 12 : 8,
+                decoration: BoxDecoration(
+                  color: _currentPage == index ? Colors.green : Colors.grey,
+                  shape: BoxShape.circle,
                 ),
               );
-            },
+            }),
           ),
-        ),
-        SizedBox(height: 16), // Jarak antara gambar dan dots indicator
-        // Dots indikator untuk menunjukkan gambar mana yang aktif
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(_images.length, (index) {
-            return AnimatedContainer(
-              duration: Duration(milliseconds: 300),
-              margin: EdgeInsets.symmetric(horizontal: 4),
-              width: _currentPage == index ? 12 : 8,
-              height: _currentPage == index ? 12 : 8,
-              decoration: BoxDecoration(
-                color: _currentPage == index ? Colors.green : Colors.grey,
-                shape: BoxShape.circle,
-              ),
-            );
-          }),
-        ),
-        SizedBox(height: 16),
-        // Menambahkan teks "Riwayat Pasien"
-        Text(
-          'Riwayat Pasien',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+          SizedBox(height: 16),
+          // Menambahkan teks "Riwayat Pasien"
+          Text(
+            'Riwayat Pasien',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        SizedBox(height: 16), // Jarak sebelum teks "Riwayat Pasien"
-        // Menampilkan daftar pasien
-        Expanded(
-          child: FutureBuilder<List<String>>(
+          SizedBox(height: 16), // Jarak sebelum teks "Riwayat Pasien"
+          // Menampilkan daftar pasien
+          FutureBuilder<List<String>>(
             future: _fetchPatientNames(), // Mengambil nama pasien
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -159,31 +190,58 @@ class _HomeContentState extends State<HomeContent> {
               } else if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               } else if (snapshot.hasData) {
-                final patientNames = snapshot.data!;
-                return ListView.builder(
-                  itemCount: patientNames.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 4.0), // Jarak vertikal
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: AssetImage(
-                              'assets/images/pasien.jpg'), // Ganti dengan path foto pasien
-                          radius: 25, // Atur radius lingkaran
-                        ),
-                        title: Text(patientNames[index]),
+                final patientNames = snapshot.data!
+                    .where((name) =>
+                        name.toLowerCase().contains(_searchQuery.toLowerCase())) // Filter pasien berdasarkan pencarian
+                    .toList();
+
+                if (patientNames.isEmpty) {
+                  // Jika daftar pasien kosong setelah filter, tampilkan teks "Belum ada data pasien"
+                  return Center(
+                    child: Text(
+                      'Belum ada data pasien',
+                      style: TextStyle(
+                        fontSize: 18, // Ukuran font teks
                       ),
-                    );
-                  },
-                );
+                    ),
+                  );
+                } else {
+                  // Jika ada data, tampilkan daftar pasien
+                  return ListView.builder(
+                    shrinkWrap: true, // Mengizinkan ListView berada di dalam SingleChildScrollView
+                    physics: NeverScrollableScrollPhysics(), // Nonaktifkan scrolling dari ListView
+                    itemCount: patientNames.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4.0), // Jarak vertikal
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: AssetImage(
+                                'assets/images/pasien.jpg'), // Ganti dengan path foto pasien
+                            radius: 25, // Atur radius lingkaran
+                          ),
+                          title: Text(patientNames[index]),
+                        ),
+                      );
+                    },
+                  );
+                }
               } else {
-                return Center(child: Text('No patients found.'));
+                // Jika tidak ada data, tampilkan pesan "Belum ada data pasien"
+                return Center(
+                  child: Text(
+                    'Belum ada data pasien',
+                    style: TextStyle(
+                      fontSize: 18, // Ukuran font teks
+                    ),
+                  ),
+                );
               }
             },
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

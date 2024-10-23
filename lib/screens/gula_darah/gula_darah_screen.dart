@@ -64,7 +64,7 @@ class _GulaDarahScreenState extends State<GulaDarahScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        title: Text('Cek Laborat'),
+        title: Text('Cek Laboratorium'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class TambahPasienScreen extends StatefulWidget {
   final Function(Map<String, dynamic>) onAddPasien;
@@ -8,11 +9,12 @@ class TambahPasienScreen extends StatefulWidget {
   final List<Map<String, dynamic>> obatList; // Daftar obat
   final List<Map<String, dynamic>> dokterList; // Daftar dokter
 
-  TambahPasienScreen(
-      {required this.onAddPasien,
-      this.pasien,
-      required this.obatList,
-      required this.dokterList});
+  TambahPasienScreen({
+    required this.onAddPasien,
+    this.pasien,
+    required this.obatList,
+    required this.dokterList,
+  });
 
   @override
   _TambahPasienScreenState createState() => _TambahPasienScreenState();
@@ -28,17 +30,66 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
 
   String? _selectedObat;
   String? _selectedDokter;
-  String? _status = "pegawai"; // Default status
+  String? _status; // Tidak ada default value untuk status
   String? _selectedProdi;
   String? _selectedJurusan;
 
-  final List<String> _prodiOptions = [
-    'TI (Teknologi Informasi)',
-    'ekbis',
-    'kebun',
-    'ternak',
-    'perkap'
-  ];
+  final Map<String, List<String>> _jurusanProdiMap = {
+    'Budidaya Tanaman Pangan': [
+      'Hortikultura',
+      'Teknologi Produksi Tanaman Pangan',
+      'Teknologi Perbenihan',
+      'TPT Hortikultura'
+    ],
+    'Budidaya Tanaman Perkebunan': [
+      'Produksi Tanaman Perkebunan',
+      'Produksi & Manajemen Induskebunan',
+      'Pengelolaan Perkebunan Kopi'
+    ],
+    'Teknologi Pertanian': [
+      'Pengolahan Patiseri',
+      'Mekanisasi Pertanian',
+      'Teknologi Pangan',
+      'Pengembangan Produk Agroindustri',
+      'Kimia Terapan'
+    ],
+    'Peternakan': [
+      'Teknologi Produksi Ternak',
+      'Agribisnis Peternakan',
+      'Teknologi Pakan Ternak'
+    ],
+    'Ekonomi dan Bisnis': [
+      'Perjalanan Wisata',
+      'Agribisnis Pangan',
+      'Pengelolaan Agribisnis',
+      'Akuntansi Perpajakan',
+      'Akuntansi Bisnis Digital',
+      'Pengelolaan Perhotelan',
+      'Pengelolaan Konvensi dan Acara'
+    ],
+    'Teknik': [
+      'Teknik Sumberdaya Lahan dan Lingkungan',
+      'Teknologi Rekayasa Konstruksi Jalan dan Jembatan',
+      'Teknologi Rekayasa Kimia Industri'
+    ],
+    'Perikanan dan Kelautan': [
+      'Budidaya Perikanan',
+      'Perikanan Tangkap',
+      'Teknologi Pembenihan Ikan'
+    ],
+    'Teknologi Informasi': [
+      'Manajemen Informatika',
+      'Teknologi Rekayasa Internet',
+      'Teknologi Rekayasa Elektronika',
+      'Teknologi Rekayasa Perangkat Lunak'
+    ],
+  };
+ void _onJurusanChanged(String? newValue) {
+    setState(() {
+      _selectedJurusan = newValue;
+      _selectedProdi = null; // Reset pilihan prodi jika jurusan berubah
+    });
+  }
 
   @override
   void initState() {
@@ -51,13 +102,23 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
       _selectedObat = widget.pasien!['obat'];
       _selectedDokter = widget.pasien!['dokter'];
       _jumlahObatController.text = widget.pasien!['jumlah_obat'] ?? '';
-      _status = widget.pasien!['status'] ?? 'pegawai'; // Ambil status jika ada
+      _status = widget.pasien!['status'];
       _selectedProdi = widget.pasien!['prodi'];
       _selectedJurusan = widget.pasien!['jurusan'];
     }
   }
 
   void _savePasien() async {
+    if (_status == null) {
+      // Beri notifikasi atau validasi jika status belum dipilih
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Pilih status pasien terlebih dahulu')),
+      );
+      return;
+    }
+
+    String formattedDate = DateFormat('yyyy-MM-dd, HH.mm').format(DateTime.now());
+
     Map<String, dynamic> pasienBaru = {
       'name': _namaController.text,
       'umur': _umurController.text,
@@ -67,7 +128,7 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
       'jumlah_obat': _jumlahObatController.text,
       'dokter': _selectedDokter,
       'status': _status,
-      'tanggal': DateTime.now().toString(), // Tambahkan tanggal saat ini
+      'tanggal': '$formattedDate', // Format tanggal dan jam
       if (_status == 'mahasiswa') 'prodi': _selectedProdi,
       if (_status == 'mahasiswa') 'jurusan': _selectedJurusan,
     };
@@ -136,18 +197,27 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
                 }),
 
                 // Tampilkan dropdown prodi dan jurusan jika status mahasiswa
-                if (_status == 'mahasiswa') ...[
-                  _buildInputField(
-                      _selectedProdiController, Icons.school, 'Prodi'),
-                  _buildDropdown(_prodiOptions, _selectedJurusan, 'Pilih Jurusan',
+               if (_status == 'mahasiswa') ...[
+                  _buildDropdown(
+                    _jurusanProdiMap.keys.toList(),
+                    _selectedJurusan,
+                    'Pilih Jurusan',
+                    _onJurusanChanged,
+                  ),
+                  if (_selectedJurusan != null)
+                    _buildDropdown(
+                      _jurusanProdiMap[_selectedJurusan!] ?? [],
+                      _selectedProdi,
+                      'Pilih Prodi',
                       (newValue) {
-                    setState(() {
-                      _selectedJurusan = newValue;
-                    });
-                  }),
+                        setState(() {
+                          _selectedProdi = newValue;
+                        });
+                      },
+                    ),
                 ],
 
-                // Dropdown untuk obat dengan tambahan opsi "-"
+                // Dropdown untuk obat
                 _buildDropdown(
                     ['-'] +
                         widget.obatList
