@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../komponen/home_screen.dart';
-import '../komponen/forgot_password_screen.dart';
+import '../komponen/home_screen.dart'; // Halaman Home untuk staff
+import '../komponen/home_pasien_screen.dart'; // Halaman Home untuk pasien
+import '../komponen/forgot_password_screen.dart'; // Halaman lupa password
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -11,7 +12,29 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  bool _isPasswordVisible = false; // Kontrol visibilitas password
+  bool _isPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _saveStaffAccount();
+  }
+
+  // Fungsi untuk menyimpan akun staff di SharedPreferences jika belum ada
+  Future<void> _saveStaffAccount() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Periksa apakah akun staff sudah ada
+    String? savedUsername = prefs.getString('staff_username');
+
+    // Jika akun staff belum ada, maka tambahkan
+    if (savedUsername == null) {
+      prefs.setString('staff_username', 'klinikpolinela');
+      prefs.setString('staff_email', 'klinikpolinela.ac.id');
+      prefs.setString('staff_password', 'klinikpolinela123');
+      prefs.setString('staff_role', 'staff');
+    }
+  }
 
   Future<void> login(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -19,19 +42,37 @@ class _LoginScreenState extends State<LoginScreen> {
     // Ambil data pengguna yang tersimpan
     String? savedUsername = prefs.getString('username');
     String? savedPassword = prefs.getString('password');
+    String? savedRole = prefs.getString('role'); // Ambil role pengguna pasien
+
+    // Ambil data akun staff
+    String? staffUsername = prefs.getString('staff_username');
+    String? staffPassword = prefs.getString('staff_password');
 
     // Verifikasi login
-    if (usernameController.text == savedUsername &&
-        passwordController.text == savedPassword) {
-      // Jika login berhasil, navigasi ke halaman HomeScreen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+    if ((usernameController.text == savedUsername &&
+            passwordController.text == savedPassword) ||
+        (usernameController.text == staffUsername &&
+            passwordController.text == staffPassword)) {
+      // Jika login berhasil, periksa role
+      if (usernameController.text == staffUsername) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => HomeScreen()), // Halaman staff
+        );
+      } else if (savedRole == 'pasien') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => HomePasienScreen()), // Halaman pasien
+        );
+      }
     } else {
-      // Jika akun tidak ditemukan atau salah, tampilkan pesan
+      // Jika akun tidak ditemukan atau salah
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Akun Anda belum terdaftar atau username dan password salah')),
+        SnackBar(
+            content: Text(
+                'Akun Anda belum terdaftar atau username dan password salah')),
       );
     }
   }
@@ -42,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         title: Text('Login'),
       ),
-      body: SingleChildScrollView( // Menambahkan kemampuan scroll
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -66,44 +107,34 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelStyle: TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide(
-                      color: Colors.black, // Outline color
-                      width: 2.0,
-                    ),
+                    borderSide: BorderSide(color: Colors.black, width: 2.0),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide(
-                      color: Colors.black,
-                      width: 2.0,
-                    ),
+                    borderSide: BorderSide(color: Colors.black, width: 2.0),
                   ),
                 ),
               ),
               SizedBox(height: 15),
               TextField(
                 controller: passwordController,
-                obscureText: !_isPasswordVisible, // Menggunakan variabel untuk kontrol visibilitas password
+                obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   labelStyle: TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide(
-                      color: Colors.black, // Outline color
-                      width: 2.0,
-                    ),
+                    borderSide: BorderSide(color: Colors.black, width: 2.0),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide(
-                      color: Colors.black,
-                      width: 2.0,
-                    ),
+                    borderSide: BorderSide(color: Colors.black, width: 2.0),
                   ),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
                       color: Colors.black,
                     ),
                     onPressed: () {
@@ -122,7 +153,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Arahkan ke halaman lupa password
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => ForgotPasswordScreen()),
                     );
                   },
                   child: Text(

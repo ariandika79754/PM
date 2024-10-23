@@ -12,7 +12,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  bool _isPasswordVisible = false; // Untuk mengontrol visibilitas password
+  bool _isPasswordVisible = false;
 
   Future<void> register(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -21,12 +21,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String email = emailController.text;
     String password = passwordController.text;
 
-    // Simpan data pengguna di SharedPreferences
+    // Simpan data pengguna di SharedPreferences dengan role pasien secara default
     prefs.setString('username', username);
     prefs.setString('email', email);
     prefs.setString('password', password);
+    prefs.setString(
+        'role', 'pasien'); // Simpan role sebagai "pasien" secara otomatis
 
-    // Setelah berhasil, navigasi ke halaman login
+    // Setelah berhasil, navigasi ke halaman login atau halaman selanjutnya
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => LoginRegisterSelection()),
@@ -45,7 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 50), // Tambahkan jarak agar bisa di-scroll dengan baik
+              SizedBox(height: 50),
               Image.asset('assets/images/logo.png', height: 100),
               SizedBox(height: 10),
               Text(
@@ -61,7 +63,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: usernameController,
                 decoration: InputDecoration(
                   labelText: 'Username',
-                  labelStyle: TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
                     borderSide: BorderSide(color: Colors.black, width: 2.0),
@@ -77,7 +78,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  labelStyle: TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
                     borderSide: BorderSide(color: Colors.black, width: 2.0),
@@ -91,10 +91,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               SizedBox(height: 15),
               TextField(
                 controller: passwordController,
-                obscureText: !_isPasswordVisible, // Kontrol visibilitas password
+                obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  labelStyle: TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
                     borderSide: BorderSide(color: Colors.black, width: 2.0),
@@ -132,7 +131,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: TextStyle(color: Colors.white),
                 ),
               ),
-              SizedBox(height: 50), // Tambahkan jarak agar tidak terpotong di layar kecil
+              SizedBox(height: 50),
             ],
           ),
         ),
