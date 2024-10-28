@@ -69,7 +69,14 @@ class _DokterScreenState extends State<DokterScreen> {
             Navigator.pop(context);
           },
         ),
-        title: Text('Dokter'),
+        title: Text(
+          'Dokter',
+          style: TextStyle(
+            fontSize: 28, // Ukuran font
+            fontFamily: 'Times New Roman', // Font Latin
+            color: Colors.green, // Warna hijau
+          ),
+        ),
       ),
       body: Column(
         children: [

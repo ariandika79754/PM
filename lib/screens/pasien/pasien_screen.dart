@@ -66,16 +66,16 @@ class _PasienScreenState extends State<PasienScreen> {
   }
 
   void _updatePasien(Map<String, dynamic> updatedPasien) {
-  setState(() {
-    int index = pasienList.indexWhere((p) => p['id'] == updatedPasien['id']); // Ganti 'id' dengan atribut unik
-    if (index != -1) {
-      pasienList[index] = updatedPasien;
-    }
-    filteredPasienList = pasienList;
-    _savePasienList();
-  });
-}
-
+    setState(() {
+      int index = pasienList.indexWhere((p) =>
+          p['id'] == updatedPasien['id']); // Ganti 'id' dengan atribut unik
+      if (index != -1) {
+        pasienList[index] = updatedPasien;
+      }
+      filteredPasienList = pasienList;
+      _savePasienList();
+    });
+  }
 
   void _savePasienList() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -113,7 +113,14 @@ class _PasienScreenState extends State<PasienScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Daftar Pasien'),
+        title: Text(
+          'Daftar Pasien',
+          style: TextStyle(
+            fontSize: 32, // Ukuran font
+            fontFamily: 'Times New Roman', // Font Latin
+            color: Colors.green, // Warna hijau
+          ),
+        ),
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(60.0),
           child: Padding(

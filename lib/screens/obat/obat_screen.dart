@@ -93,7 +93,14 @@ class _ObatScreenState extends State<ObatScreen> {
             Navigator.pop(context);
           },
         ),
-        title: Text('Obat'),
+        title: Text(
+          'Obat',
+          style: TextStyle(
+            fontSize: 28, // Ukuran font
+            fontFamily: 'Times New Roman', // Font Latin
+            color: Colors.green, // Warna hijau
+          ),
+        ),
       ),
       body: Column(
         children: [

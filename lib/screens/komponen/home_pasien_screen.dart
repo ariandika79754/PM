@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Tambahkan ini
+import 'package:shared_preferences/shared_preferences.dart';
 import '../layoutpasien/riwayat_kunjungan_screen.dart';
 import '../layoutpasien/buat_janji_screen.dart';
 import '../layoutpasien/hasil_tes_screen.dart';
 import '../layoutpasien/bantuan_screen.dart';
 import '../layoutpasien/profile_screen.dart';
+import '../auth/login_screen.dart';
+import '../alatguladarahpasien/alat_gula_darah_screen.dart'; // Tambahkan ini
 
 class HomePasienScreen extends StatefulWidget {
   @override
@@ -27,7 +29,6 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
     _loadUserData();
   }
 
-  // Fungsi untuk memuat email dan avatar dari sesi pengguna
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -58,43 +59,69 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
         ),
       ),
       drawer: Drawer(
-        child: ListView(
+        child: Stack(
           children: [
-            UserAccountsDrawerHeader(
-              accountName: Text('Pasien'),
-              accountEmail: Text(
-                  _userEmail ?? 'pasien@example.com'), // Email sesuai login
-              currentAccountPicture: CircleAvatar(
-                backgroundImage: AssetImage(_userAvatar ??
-                    'assets/images/default_avatar.png'), // Avatar sesuai login
-                backgroundColor: Colors.white,
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Profil'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfileScreen(), // Halaman profil
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.monitor_heart),
-              title: Text('Alat Gula Darah'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.close),
-              title: Text('Tutup'),
-              onTap: () {
-                Navigator.pop(context); // Untuk menutup drawer
-              },
+            ListView(
+              children: [
+                Stack(
+                  children: [
+                    UserAccountsDrawerHeader(
+                      accountName: Text('Pasien'),
+                      accountEmail: Text(_userEmail ?? 'pasien@example.com'),
+                      currentAccountPicture: CircleAvatar(
+                        backgroundImage: AssetImage(
+                            _userAvatar ?? 'assets/images/default_avatar.png'),
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.pop(context); // Untuk menutup drawer
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                ListTile(
+                  leading: Icon(Icons.person),
+                  title: Text('Profil'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfileScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.monitor_heart),
+                  title: Text('Alat Gula Darah'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AlatGulaDarahScreen(), // Arahkan ke AlatGulaDarahScreen
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.exit_to_app, color: Colors.red),
+                  title: Text('Keluar'),
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                    );
+                  },
+                ),
+              ],
             ),
           ],
         ),
@@ -144,7 +171,6 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
                       );
                     },
                   ),
-                  // Pindahkan dot di bawah gambar dan tambah jarak
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(
@@ -197,18 +223,6 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => RiwayatKunjunganScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.calendar_today,
-                    label: 'Buat Janji',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BuatJanjiScreen(),
                         ),
                       );
                     },

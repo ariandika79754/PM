@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../dokter/dokter_screen.dart'; // Import halaman dokter
 import '../obat/obat_screen.dart'; // Import halaman obat
 import '../gula_darah/gula_darah_screen.dart'; // Import halaman gula darah
+import '../alatguladarah/alat_gula_darah_screen.dart'; // Import halaman alat gula darah
 
 class DokumenScreen extends StatelessWidget {
   @override
@@ -9,7 +10,14 @@ class DokumenScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // Hilangkan icon back
-        title: Text('Dokumen'),
+        title: Text(
+          'Dokumen',
+          style: TextStyle(
+            fontSize: 32, // Ukuran font
+            fontFamily: 'Times New Roman', // Font Latin
+            color: Colors.green, // Warna hijau
+          ),
+        ),
       ),
       body: Padding(
         padding:
@@ -91,6 +99,35 @@ class DokumenScreen extends StatelessWidget {
                   SizedBox(width: 16), // Jarak antara gambar dan teks
                   Text(
                     'Cek Laboratorium',
+                    style: TextStyle(fontSize: 18), // Tambah ukuran font
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+                height:
+                    20), // Jarak vertikal antara Gula Darah dan Alat Gula Darah
+            // Baris untuk gambar dan teks Alat Gula Darah
+            GestureDetector(
+              onTap: () {
+                // Navigasi ke halaman Alat Gula Darah
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AlatGulaDarahScreen(),
+                  ),
+                );
+              },
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage:
+                        AssetImage('assets/images/alat_gula_darah.jpg'),
+                    radius: 30, // Ukuran gambar
+                  ),
+                  SizedBox(width: 16), // Jarak antara gambar dan teks
+                  Text(
+                    'Alat Gula Darah',
                     style: TextStyle(fontSize: 18), // Tambah ukuran font
                   ),
                 ],

@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For formatting the selected date
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class AddPasienScreen extends StatefulWidget {
-  final Map<String, dynamic>? pasienData; // Data pasien untuk di-edit
+  final Map<String, dynamic>? pasienData;
+  final List<Map<String, dynamic>> alatList;
 
-  AddPasienScreen({this.pasienData}); // Bisa null jika tambah baru
+  AddPasienScreen({required this.alatList, this.pasienData});
 
   @override
   _AddPasienScreenState createState() => _AddPasienScreenState();
 }
 
 class _AddPasienScreenState extends State<AddPasienScreen> {
-  String? selectedStatus; // Store selected status
-  bool showProdiJurusan =
-      false; // Control visibility of Prodi and Jurusan fields
-  DateTime? selectedDate; // To store the selected date
-  TextEditingController dateController =
-      TextEditingController(); // Controller for the date field
-
-  // Controllers for text fields
+  String? _selectedAlat;
+  String? _selectedStatus;
+  bool showProdiJurusan = false;
+  DateTime? selectedDate;
+  TextEditingController dateController = TextEditingController();
   TextEditingController namaController = TextEditingController();
   TextEditingController prodiController = TextEditingController();
   TextEditingController jurusanController = TextEditingController();
@@ -28,22 +28,73 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
   TextEditingController kolestrolController = TextEditingController();
   TextEditingController asamUratController = TextEditingController();
 
+  String? _selectedProdi;
+  String? _selectedJurusan;
+
+  final Map<String, List<String>> _jurusanProdiMap = {
+    'Budidaya Tanaman Pangan': [
+      'Hortikultura',
+      'Teknologi ProduksiTanamanPangan',
+      'Teknologi Perbenihan',
+      'TPT Hortikultura'
+    ],
+    'Budidaya Tanaman Perkebunan': [
+      'Produksi Tanaman Perkebunan',
+      'Produksi & Manajemen Induskebunan',
+      'Pengelolaan Perkebunan Kopi'
+    ],
+  };
+
+  Future<void> _loadAlatList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? alatListJson = prefs.getString('alatList');
+    if (alatListJson != null) {
+      List<dynamic> jsonList = json.decode(alatListJson);
+      setState(() {
+        widget.alatList.clear();
+        widget.alatList.addAll(List<Map<String, dynamic>>.from(jsonList));
+      });
+    }
+  }
+
+  Future<void> _saveAlatList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String updatedAlatListJson = json.encode(widget.alatList);
+    await prefs.setString('alatList', updatedAlatListJson);
+  }
+
+  void _reduceAlatStock() {
+    if (_selectedAlat != null) {
+      for (var alat in widget.alatList) {
+        if (alat['name'] == _selectedAlat && (alat['stok'] ?? 0) > 0) {
+          setState(() {
+            alat['stok'] -= 1;
+          });
+          _saveAlatList(); // Simpan stok yang telah diperbarui ke SharedPreferences
+          break;
+        }
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    // Jika ada data pasien, isi form dengan data tersebut
+    _loadAlatList();
+
     if (widget.pasienData != null) {
-      namaController.text = widget.pasienData!['nama'];
-      dateController.text = widget.pasienData!['tanggal'];
-      selectedStatus = widget.pasienData!['status'];
-      showProdiJurusan = (selectedStatus == 'Mahasiswa');
-      prodiController.text = widget.pasienData!['prodi'];
-      jurusanController.text = widget.pasienData!['jurusan'];
-      gulaDarahController.text = widget.pasienData!['gula_darah'];
-      tensiController.text = widget.pasienData!['tensi'];
-      kolestrolController.text = widget.pasienData!['kolestrol'];
-      asamUratController.text = widget.pasienData!['asam_urat'];
-      keteranganController.text = widget.pasienData!['keterangan'];
+      namaController.text = widget.pasienData!['nama'] ?? '';
+      _selectedAlat = widget.pasienData!['alat_gula_darah'] ?? '';
+      dateController.text = widget.pasienData!['tanggal'] ?? '';
+      _selectedStatus = widget.pasienData!['status'] ?? '';
+      showProdiJurusan = (_selectedStatus == 'Mahasiswa');
+      prodiController.text = widget.pasienData!['prodi'] ?? '';
+      jurusanController.text = widget.pasienData!['jurusan'] ?? '';
+      gulaDarahController.text = widget.pasienData!['gula_darah'] ?? '';
+      tensiController.text = widget.pasienData!['tensi'] ?? '';
+      kolestrolController.text = widget.pasienData!['kolestrol'] ?? '';
+      asamUratController.text = widget.pasienData!['asam_urat'] ?? '';
+      keteranganController.text = widget.pasienData!['keterangan'] ?? '';
     }
   }
 
@@ -51,41 +102,41 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.pasienData == null ? 'Tambah Pasien' : 'Edit Pasien'),
+        title:
+            Text(widget.pasienData == null ? 'Tambah Pasien' : 'Edit Pasien'),
         actions: [
           TextButton(
             onPressed: () {
-              // Validasi sebelum menyimpan
               if (namaController.text.isEmpty ||
                   dateController.text.isEmpty ||
-                  selectedStatus == null) {
+                  _selectedStatus == null ||
+                  _selectedAlat == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Semua field harus diisi!')),
                 );
                 return;
               }
 
-              // Data yang akan disimpan
               Map<String, dynamic> pasienData = {
                 "nama": namaController.text,
                 "tanggal": dateController.text,
-                "status": selectedStatus,
-                "prodi": prodiController.text,
-                "jurusan": jurusanController.text,
+                'alat_gula_darah': _selectedAlat,
+                "status": _selectedStatus,
+                "prodi": _selectedProdi,
+                "jurusan": _selectedJurusan,
                 "keterangan": keteranganController.text,
                 "gula_darah": gulaDarahController.text,
                 "tensi": tensiController.text,
                 "kolestrol": kolestrolController.text,
                 "asam_urat": asamUratController.text,
+                "username":
+                    namaController.text, // Menambahkan username otomatis
               };
 
-              // Return data to the previous screen
+              _reduceAlatStock(); // Kurangi stok alat saat menyimpan data
               Navigator.pop(context, pasienData);
             },
-            child: Text(
-              'Simpan',
-              style: TextStyle(color: Colors.green),
-            ),
+            child: Text('Simpan', style: TextStyle(color: Colors.green)),
           ),
         ],
       ),
@@ -97,10 +148,7 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
             children: [
               _buildTextField(namaController, Icons.person, "Nama Lengkap"),
               SizedBox(height: 10),
-
-              // Tanggal TextField with DatePicker
               _buildDateField(context),
-
               SizedBox(height: 10),
               _buildDropdownField(
                 Icons.insert_drive_file,
@@ -108,18 +156,50 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
                 ["Pegawai", "Mahasiswa"],
                 (value) {
                   setState(() {
-                    selectedStatus = value;
+                    _selectedStatus = value;
                     showProdiJurusan = (value == "Mahasiswa");
+                    if (!showProdiJurusan) {
+                      prodiController.clear();
+                      jurusanController.clear();
+                      _selectedProdi = null;
+                      _selectedJurusan = null;
+                    }
                   });
                 },
+                _selectedStatus,
               ),
               SizedBox(height: 10),
               if (showProdiJurusan) ...[
-                _buildTextField(prodiController, Icons.school, "Prodi"),
+                _buildDropdownField(
+                  Icons.school,
+                  "Jurusan",
+                  _jurusanProdiMap.keys.toList(),
+                  (value) {
+                    setState(() {
+                      _selectedJurusan = value;
+                      _selectedProdi = null;
+                      prodiController.clear();
+                    });
+                  },
+                  _selectedJurusan,
+                ),
                 SizedBox(height: 10),
-                _buildTextField(jurusanController, Icons.school, "Jurusan"),
+                if (_selectedJurusan != null)
+                  _buildDropdownField(
+                    Icons.school,
+                    "Prodi",
+                    _jurusanProdiMap[_selectedJurusan] ?? [],
+                    (value) {
+                      setState(() {
+                        _selectedProdi = value;
+                      });
+                    },
+                    _selectedProdi,
+                  ),
                 SizedBox(height: 10),
-              ],            
+              ],
+              _buildDropdownAlatField(),
+              SizedBox(height: 10),
               _buildTextField(gulaDarahController, Icons.health_and_safety,
                   "Cek Gula Darah"),
               SizedBox(height: 10),
@@ -128,10 +208,10 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
               _buildTextField(kolestrolController, Icons.monitor_heart_outlined,
                   "Kolestrol"),
               SizedBox(height: 10),
-              _buildTextField(asamUratController, Icons.warning, "Asam Urat"),
+              _buildTextField(
+                  asamUratController, Icons.monitor_heart, "Asam Urat"),
               SizedBox(height: 10),
               _buildTextField(keteranganController, Icons.note, "Keterangan"),
-              
             ],
           ),
         ),
@@ -144,40 +224,32 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
-        prefixIcon: Icon(icon),
         labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(),
       ),
     );
   }
 
-  // Date field that opens a DatePicker
   Widget _buildDateField(BuildContext context) {
     return TextField(
       controller: dateController,
-      readOnly: true, // So the keyboard doesn't appear
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.calendar_today),
         labelText: 'Tanggal',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        prefixIcon: Icon(Icons.calendar_today),
+        border: OutlineInputBorder(),
       ),
+      readOnly: true,
       onTap: () async {
         DateTime? pickedDate = await showDatePicker(
           context: context,
-          initialDate: selectedDate ?? DateTime.now(),
+          initialDate: DateTime.now(),
           firstDate: DateTime(2000),
-          lastDate: DateTime(2100),
+          lastDate: DateTime.now(),
         );
-
         if (pickedDate != null) {
           setState(() {
-            selectedDate = pickedDate;
-            dateController.text =
-                DateFormat('yyyy-MM-dd').format(pickedDate); // Format date
+            dateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
           });
         }
       },
@@ -185,28 +257,42 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
   }
 
   Widget _buildDropdownField(IconData icon, String label, List<String> items,
-      ValueChanged<String?> onChanged) {
-    return InputDecorator(
+      Function(String?) onChanged, String? selectedValue) {
+    return DropdownButtonFormField<String>(
       decoration: InputDecoration(
-        prefixIcon: Icon(icon),
         labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: selectedStatus,
-          isExpanded: true,
-          items: items.map((item) {
-            return DropdownMenuItem(
-              value: item,
-              child: Text(item),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
+      value: selectedValue,
+      onChanged: onChanged,
+      items: items.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDropdownAlatField() {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: "Alat Cek Gula Darah",
+        border: OutlineInputBorder(),
       ),
+      value: _selectedAlat,
+      onChanged: (String? newValue) {
+        setState(() {
+          _selectedAlat = newValue;
+        });
+      },
+      items: widget.alatList.map<DropdownMenuItem<String>>((alat) {
+        return DropdownMenuItem<String>(
+          value: alat['name'],
+          child: Text(alat['name']),
+        );
+      }).toList(),
     );
   }
 }

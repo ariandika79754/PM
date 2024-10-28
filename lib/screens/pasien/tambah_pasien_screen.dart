@@ -84,7 +84,7 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
       'Teknologi Rekayasa Perangkat Lunak'
     ],
   };
- void _onJurusanChanged(String? newValue) {
+  void _onJurusanChanged(String? newValue) {
     setState(() {
       _selectedJurusan = newValue;
       _selectedProdi = null; // Reset pilihan prodi jika jurusan berubah
@@ -117,7 +117,8 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
       return;
     }
 
-    String formattedDate = DateFormat('yyyy-MM-dd, HH.mm').format(DateTime.now());
+    String formattedDate =
+        DateFormat('yyyy-MM-dd, HH.mm').format(DateTime.now());
 
     Map<String, dynamic> pasienBaru = {
       'name': _namaController.text,
@@ -131,6 +132,7 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
       'tanggal': '$formattedDate', // Format tanggal dan jam
       if (_status == 'mahasiswa') 'prodi': _selectedProdi,
       if (_status == 'mahasiswa') 'jurusan': _selectedJurusan,
+      'username': _namaController.text, // Tambahkan username di sini
     };
 
     // Kurangi stok obat
@@ -189,7 +191,8 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
                     _diagnosaController, Icons.local_hospital, 'Diagnosa'),
 
                 // Dropdown untuk status
-                _buildDropdown(['pegawai', 'mahasiswa'], _status, 'Pilih Status',
+                _buildDropdown(
+                    ['pegawai', 'mahasiswa'], _status, 'Pilih Status',
                     (newValue) {
                   setState(() {
                     _status = newValue;
@@ -197,7 +200,7 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
                 }),
 
                 // Tampilkan dropdown prodi dan jurusan jika status mahasiswa
-               if (_status == 'mahasiswa') ...[
+                if (_status == 'mahasiswa') ...[
                   _buildDropdown(
                     _jurusanProdiMap.keys.toList(),
                     _selectedJurusan,
@@ -230,8 +233,8 @@ class _TambahPasienScreenState extends State<TambahPasienScreen> {
                   });
                 }),
 
-                _buildInputField(_jumlahObatController, Icons.confirmation_number,
-                    'Jumlah Obat'),
+                _buildInputField(_jumlahObatController,
+                    Icons.confirmation_number, 'Jumlah Obat'),
                 _buildDropdown(
                     ['-'] +
                         widget.dokterList

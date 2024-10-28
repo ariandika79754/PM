@@ -17,17 +17,17 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _saveStaffAccount();
+    _saveDefaultStaffAccount();
   }
 
-  // Fungsi untuk menyimpan akun staff di SharedPreferences jika belum ada
-  Future<void> _saveStaffAccount() async {
+  // Fungsi untuk menyimpan akun default staff di SharedPreferences jika belum ada
+  Future<void> _saveDefaultStaffAccount() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // Periksa apakah akun staff sudah ada
+    // Periksa apakah akun staff default sudah ada
     String? savedUsername = prefs.getString('staff_username');
 
-    // Jika akun staff belum ada, maka tambahkan
+    // Jika akun staff belum ada, maka tambahkan akun default
     if (savedUsername == null) {
       prefs.setString('staff_username', 'klinikpolinela');
       prefs.setString('staff_email', 'klinikpolinela.ac.id');
@@ -36,6 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Fungsi untuk login
   Future<void> login(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 

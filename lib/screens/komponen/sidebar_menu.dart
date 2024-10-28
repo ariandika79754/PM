@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../auth/login_screen.dart';
 
 class SidebarMenu extends StatelessWidget {
   final Function(DateTimeRange) onFilterByDateRange;
@@ -83,6 +84,16 @@ class SidebarMenu extends StatelessWidget {
               Navigator.pop(context);
               onFilterByDateRange(
                   DateTimeRange(start: startOfYear, end: endOfYear));
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.exit_to_app, color: Colors.red),
+            title: Text('Keluar'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
             },
           ),
         ],
