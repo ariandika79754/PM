@@ -35,7 +35,7 @@ class _TambahAlatGulaDarahScreenState extends State<TambahAlatGulaDarahScreen> {
       appBar: AppBar(
         title: Text('Tambah Alat Gula Darah'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

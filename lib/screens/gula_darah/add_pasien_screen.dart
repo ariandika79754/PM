@@ -34,7 +34,7 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
   final Map<String, List<String>> _jurusanProdiMap = {
     'Budidaya Tanaman Pangan': [
       'Hortikultura',
-      'Teknologi ProduksiTanamanPangan',
+      'TeknologiProduksiTanamanPangan',
       'Teknologi Perbenihan',
       'TPT Hortikultura'
     ],
@@ -42,6 +42,43 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
       'Produksi Tanaman Perkebunan',
       'Produksi & Manajemen Induskebunan',
       'Pengelolaan Perkebunan Kopi'
+    ],
+    'Teknologi Pertanian': [
+      'Pengolahan Patiseri',
+      'Mekanisasi Pertanian',
+      'Teknologi Pangan',
+      'Pengembangan Produk Agroindustri',
+      'Kimia Terapan'
+    ],
+    'Peternakan': [
+      'Teknologi Produksi Ternak',
+      'Agribisnis Peternakan',
+      'Teknologi Pakan Ternak'
+    ],
+    'Ekonomi dan Bisnis': [
+      'Perjalanan Wisata',
+      'Agribisnis Pangan',
+      'Pengelolaan Agribisnis',
+      'Akuntansi Perpajakan',
+      'Akuntansi Bisnis Digital',
+      'Pengelolaan Perhotelan',
+      'Pengelolaan Konvensi dan Acara'
+    ],
+    'Teknik': [
+      'Teknik Sumberdaya Lahan dan Lingkungan',
+      'TeknologiRekayasaKonstruksiJalan&Jembatan',
+      'Teknologi Rekayasa Kimia Industri'
+    ],
+    'Perikanan dan Kelautan': [
+      'Budidaya Perikanan',
+      'Perikanan Tangkap',
+      'Teknologi Pembenihan Ikan'
+    ],
+    'Teknologi Informasi': [
+      'Manajemen Informatika',
+      'Teknologi Rekayasa Internet',
+      'Teknologi Rekayasa Elektronika',
+      'Teknologi Rekayasa Perangkat Lunak'
     ],
   };
 
