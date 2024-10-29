@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../layoutpasien/riwayat_kunjungan_screen.dart';
-import '../layoutpasien/buat_janji_screen.dart';
 import '../layoutpasien/hasil_tes_screen.dart';
 import '../layoutpasien/bantuan_screen.dart';
 import '../layoutpasien/profile_screen.dart';
@@ -16,7 +15,8 @@ class HomePasienScreen extends StatefulWidget {
 class _HomePasienScreenState extends State<HomePasienScreen> {
   int _currentIndex = 0;
   String? _userEmail;
-  String? _userAvatar;
+  String? _userUsername;
+ 
   final List<String> _imageAssets = [
     'assets/images/hero.jpg',
     'assets/images/klinik.jpg',
@@ -32,9 +32,8 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _userEmail = prefs.getString('email') ?? 'pasien@example.com'; // Default
-      _userAvatar = prefs.getString('avatar') ??
-          'assets/images/default_avatar.png'; // Default avatar
+      _userEmail = prefs.getString('email') ?? 'pasien@example.com';
+      _userUsername = prefs.getString('username') ?? 'Pasien'; // Pastikan ada nilai default
     });
   }
 
@@ -59,69 +58,66 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
         ),
       ),
       drawer: Drawer(
-        child: Stack(
+        child: ListView(
           children: [
-            ListView(
+            Stack(
               children: [
-                Stack(
-                  children: [
-                    UserAccountsDrawerHeader(
-                      accountName: Text('Pasien'),
-                      accountEmail: Text(_userEmail ?? 'pasien@example.com'),
-                      currentAccountPicture: CircleAvatar(
-                        backgroundImage: AssetImage(
-                            _userAvatar ?? 'assets/images/default_avatar.png'),
-                        backgroundColor: Colors.white,
-                      ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: Icon(Icons.close),
-                        onPressed: () {
-                          Navigator.pop(context); // Untuk menutup drawer
-                        },
-                      ),
-                    ),
-                  ],
+               UserAccountsDrawerHeader(
+                  accountName: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Pasien', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Teks "Pasien"
+                      Text(_userUsername ?? 'Pasien', style: TextStyle(fontSize: 16)), // Username
+                    ],
+                  ),
+                  accountEmail: null, // Menghilangkan email
                 ),
-                ListTile(
-                  leading: Icon(Icons.person),
-                  title: Text('Profil'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProfileScreen(),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.monitor_heart),
-                  title: Text('Alat Gula Darah'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            AlatGulaDarahScreen(), // Arahkan ke AlatGulaDarahScreen
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.exit_to_app, color: Colors.red),
-                  title: Text('Keluar'),
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
-                    );
-                  },
+
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon: Icon(Icons.close, color: Colors.white), // Ubah warna ke putih
+                    onPressed: () {
+                      Navigator.pop(context); // Menutup drawer
+                    },
+                  ),
                 ),
               ],
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text('Profil'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.monitor_heart),
+              title: Text('Alat Gula Darah'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AlatGulaDarahScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.exit_to_app, color: Colors.red),
+              title: Text('Keluar'),
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                );
+              },
             ),
           ],
         ),
@@ -134,7 +130,7 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 20.0),
               child: Text(
-                'Selamat datang, Pasien!',
+                'Selamat datang, $_userUsername!', // Menampilkan username
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -150,8 +146,7 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
                   PageView.builder(
                     itemCount: _imageAssets.length,
                     pageSnapping: true,
-                    controller: PageController(
-                        viewportFraction: 1), // Mengatur jarak antar gambar
+                    controller: PageController(viewportFraction: 1), // Mengatur jarak antar gambar
                     onPageChanged: (index) {
                       setState(() {
                         _currentIndex = index;
@@ -159,8 +154,7 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
                     },
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10.0), // Menambahkan padding di sisi
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0), // Menambahkan padding di sisi
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(10.0),
                           child: Image.asset(
@@ -174,15 +168,13 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                          top: 130.0, bottom: 20.0), // Atur jarak ke bawah
+                      padding: const EdgeInsets.only(top: 130.0, bottom: 20.0), // Atur jarak ke bawah
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
                           _imageAssets.length,
                           (index) => Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
                             child: GestureDetector(
                               onTap: () {
                                 setState(() {

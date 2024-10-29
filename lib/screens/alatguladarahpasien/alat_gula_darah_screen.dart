@@ -51,7 +51,7 @@ class _AlatGulaDarahScreenState extends State<AlatGulaDarahScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Alat Gula Darah'),
+        title: Text('Alat Gula Darah', style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.green,
       ),
       body: Padding(

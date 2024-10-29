@@ -23,16 +23,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadProfileData(); // Load data profile saat inisialisasi
   }
 
-  Future<void> _loadProfileData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _usernameController.text = prefs.getString('username') ?? 'Poliklinik';
-      _emailController.text =
-          prefs.getString('email') ?? 'poliklinik@gmail.com';
-      _passwordController.text = prefs.getString('password') ?? '12345678';
-      _phoneController.text = prefs.getString('phone') ?? '';
-    });
-  }
+ Future<void> _loadProfileData() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  setState(() {
+    _usernameController.text = prefs.getString('username') ?? 'Poliklinik';
+    _emailController.text = prefs.getString('email') ?? 'poliklinik@gmail.com';
+    _passwordController.text = prefs.getString('password') ?? '12345678';
+    _phoneController.text = prefs.getString('phone') ?? '';
+    _imagePath = prefs.getString('profile_image'); // Ambil path gambar
+  });
+}
+
 
   Future<void> _updateProfile() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -48,15 +49,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _imagePath = image.path;
-      });
-    }
+ Future<void> _pickImage() async {
+  final ImagePicker _picker = ImagePicker();
+  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  if (image != null) {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('profile_image', image.path); // Simpan path gambar
+    setState(() {
+      _imagePath = image.path;
+    });
+    print("Path gambar yang disimpan: ${image.path}"); // Tambahkan ini
   }
+}
 
   Widget _buildEditableProfileItem(
       String label, TextEditingController controller, IconData icon) {
