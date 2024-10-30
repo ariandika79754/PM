@@ -107,11 +107,56 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
           setState(() {
             alat['stok'] -= 1;
           });
-          _saveAlatList(); // Simpan stok yang telah diperbarui ke SharedPreferences
+          _saveAlatList();
           break;
         }
       }
     }
+  }
+
+  void _updateKeterangan() {
+    String gulaDarahText = gulaDarahController.text;
+    String tensiText = tensiController.text;
+    String kolesterolText = kolestrolController.text;
+    String asamUratText = asamUratController.text;
+
+    String keterangan = "";
+
+    if (gulaDarahText.isNotEmpty) {
+      double gulaDarah = double.tryParse(gulaDarahText) ?? 0;
+      if (gulaDarah > 140) {
+        keterangan += "Gula darah tinggi, perlu perhatian lebih.\n";
+      } else if (gulaDarah < 70) {
+        keterangan += "Gula darah rendah, disarankan untuk makan segera.\n";
+      }
+    }
+
+    if (tensiText.isNotEmpty) {
+      int tensi = int.tryParse(tensiText) ?? 0;
+      if (tensi > 130) {
+        keterangan += "Tekanan darah tinggi, pertimbangkan pemeriksaan lebih lanjut.\n";
+      } else if (tensi < 90) {
+        keterangan += "Tekanan darah rendah, istirahat disarankan.\n";
+      }
+    }
+
+    if (kolesterolText.isNotEmpty) {
+      double kolesterol = double.tryParse(kolesterolText) ?? 0;
+      if (kolesterol > 200) {
+        keterangan += "Kolesterol tinggi, disarankan untuk mengatur pola makan.\n";
+      }
+    }
+
+    if (asamUratText.isNotEmpty) {
+      double asamUrat = double.tryParse(asamUratText) ?? 0;
+      if (asamUrat > 7) {
+        keterangan += "Asam urat tinggi, hindari makanan tinggi purin.\n";
+      }
+    }
+
+    setState(() {
+      keteranganController.text = keterangan.trim();
+    });
   }
 
   @override
@@ -132,7 +177,28 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
       kolestrolController.text = widget.pasienData!['kolestrol'] ?? '';
       asamUratController.text = widget.pasienData!['asam_urat'] ?? '';
       keteranganController.text = widget.pasienData!['keterangan'] ?? '';
+      _updateKeterangan();
     }
+
+    gulaDarahController.addListener(_updateKeterangan);
+    tensiController.addListener(_updateKeterangan);
+    kolestrolController.addListener(_updateKeterangan);
+    asamUratController.addListener(_updateKeterangan);
+  }
+
+  @override
+  void dispose() {
+    gulaDarahController.removeListener(_updateKeterangan);
+    tensiController.removeListener(_updateKeterangan);
+    kolestrolController.removeListener(_updateKeterangan);
+    asamUratController.removeListener(_updateKeterangan);
+
+    gulaDarahController.dispose();
+    tensiController.dispose();
+    kolestrolController.dispose();
+    asamUratController.dispose();
+
+    super.dispose();
   }
 
   @override
