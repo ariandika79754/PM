@@ -124,7 +124,7 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
 
     if (gulaDarahText.isNotEmpty) {
       double gulaDarah = double.tryParse(gulaDarahText) ?? 0;
-      if (gulaDarah > 140) {
+      if (gulaDarah > 100) {
         keterangan += "Gula darah tinggi, perlu perhatian lebih.\n";
       } else if (gulaDarah < 70) {
         keterangan += "Gula darah rendah, disarankan untuk makan segera.\n";
@@ -149,7 +149,7 @@ class _AddPasienScreenState extends State<AddPasienScreen> {
 
     if (asamUratText.isNotEmpty) {
       double asamUrat = double.tryParse(asamUratText) ?? 0;
-      if (asamUrat > 7) {
+      if (asamUrat > 6) {
         keterangan += "Asam urat tinggi, hindari makanan tinggi purin.\n";
       }
     }

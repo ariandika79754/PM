@@ -32,6 +32,7 @@ class DetailPasienScreen extends StatelessWidget {
             _buildDetailItem("Status", pasienData['status']),
             _buildDetailItem("Prodi", pasienData['prodi']),
             _buildDetailItem("Jurusan", pasienData['jurusan']),
+             _buildDetailItem("Alat Cek Gula", pasienData['alat_gula_darah']),
             _buildDetailItem("Tanggal", pasienData['tanggal']),
             _buildDetailItem("Hasil", pasienData['keterangan']),
             SizedBox(height: 20),
