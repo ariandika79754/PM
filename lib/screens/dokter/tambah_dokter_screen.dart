@@ -21,15 +21,14 @@ class TambahDokterScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Kembali ke layar sebelumnya
+            Navigator.pop(context);
           },
         ),
         actions: [
           TextButton(
             onPressed: () {
-              onAddDokter(
-                  _nameController.text); // Panggil fungsi untuk menambah dokter
-              Navigator.pop(context); // Kembali setelah menyimpan
+              onAddDokter(_nameController.text);
+              Navigator.pop(context);
             },
             child: Text(
               'Simpan',
@@ -61,9 +60,9 @@ class TambahDokterScreen extends StatelessWidget {
         child: TextField(
           controller: controller,
           decoration: InputDecoration(
-            prefixIcon: Icon(icon), // Ikon di depan TextField
-            labelText: label, // Label TextField
-            border: InputBorder.none, // Menghilangkan border default
+            prefixIcon: Icon(icon),
+            labelText: label,
+            border: InputBorder.none,
           ),
         ),
       ),

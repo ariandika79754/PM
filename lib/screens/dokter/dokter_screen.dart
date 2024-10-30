@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
-import 'dart:convert'; // Untuk encode/decode JSON
-import 'detail_dokter_screen.dart'; // Import the detail screen
-import 'tambah_dokter_screen.dart'; // Import the add screen
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'detail_dokter_screen.dart';
+import 'tambah_dokter_screen.dart';
 
 class DokterScreen extends StatefulWidget {
   @override
@@ -11,52 +11,42 @@ class DokterScreen extends StatefulWidget {
 
 class _DokterScreenState extends State<DokterScreen> {
   List<Map<String, dynamic>> dokterList = [];
-  List<Map<String, dynamic>> filteredDokterList =
-      []; // Daftar untuk menampung hasil filter
+  List<Map<String, dynamic>> filteredDokterList = [];
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadDokterList(); // Load data dokter saat inisialisasi
+    _loadDokterList();
   }
 
-  // Fungsi untuk mengambil data dokter dari SharedPreferences
   Future<void> _loadDokterList() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? dokterString = prefs.getString('dokterList');
     if (dokterString != null) {
       setState(() {
         dokterList = List<Map<String, dynamic>>.from(json.decode(dokterString));
-        filteredDokterList =
-            dokterList; // Inisialisasi daftar filter dengan daftar dokter
+        filteredDokterList = List.from(dokterList);
       });
     }
   }
 
-  // Fungsi untuk menyimpan data dokter ke SharedPreferences
   Future<void> _saveDokterList() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String dokterString = json.encode(dokterList);
     prefs.setString('dokterList', dokterString);
   }
 
-  // Fungsi untuk memfilter daftar dokter berdasarkan pencarian
   void _filterDokter(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        filteredDokterList =
-            dokterList; // Tampilkan semua dokter jika query kosong
-      });
-    } else {
-      setState(() {
+    setState(() {
+      if (query.isEmpty) {
+        filteredDokterList = List.from(dokterList);
+      } else {
         filteredDokterList = dokterList.where((dokter) {
-          return dokter['name']
-              .toLowerCase()
-              .contains(query.toLowerCase()); // Filter berdasarkan nama
+          return dokter['name'].toLowerCase().contains(query.toLowerCase());
         }).toList();
-      });
-    }
+      }
+    });
   }
 
   @override
@@ -72,9 +62,9 @@ class _DokterScreenState extends State<DokterScreen> {
         title: Text(
           'Dokter',
           style: TextStyle(
-            fontSize: 28, // Ukuran font
-            fontFamily: 'Times New Roman', // Font Latin
-            color: Colors.green, // Warna hijau
+            fontSize: 28,
+            fontFamily: 'Times New Roman',
+            color: Colors.green,
           ),
         ),
       ),
@@ -95,8 +85,7 @@ class _DokterScreenState extends State<DokterScreen> {
                       ),
                     ),
                     onChanged: (value) {
-                      _filterDokter(
-                          value); // Panggil fungsi filter saat input berubah
+                      _filterDokter(value);
                     },
                   ),
                 ),
@@ -105,8 +94,7 @@ class _DokterScreenState extends State<DokterScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount:
-                  filteredDokterList.length, // Gunakan daftar hasil filter
+              itemCount: filteredDokterList.length,
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: CircleAvatar(
@@ -124,20 +112,19 @@ class _DokterScreenState extends State<DokterScreen> {
                           dokter: filteredDokterList[index],
                           onDeleteDokter: (deletedDokter) {
                             setState(() {
-                              dokterList.remove(
-                                  deletedDokter); // Hapus dokter dari daftar
-                              filteredDokterList.remove(
-                                  deletedDokter); // Hapus dari daftar filter
-                              _saveDokterList(); // Simpan setelah dihapus
+                              dokterList.remove(deletedDokter);
+                              filteredDokterList.remove(deletedDokter);
+                              _saveDokterList();
                             });
                           },
                           onEditDokter: (editedDokter) {
                             setState(() {
-                              dokterList[index] =
-                                  editedDokter; // Perbarui dokter yang diedit
-                              filteredDokterList[index] =
-                                  editedDokter; // Perbarui daftar filter
-                              _saveDokterList(); // Simpan perubahan
+                              int index = dokterList.indexWhere((dokter) => dokter['name'] == editedDokter['name']);
+                              if (index != -1) {
+                                dokterList[index] = editedDokter;
+                                filteredDokterList[index] = editedDokter;
+                                _saveDokterList();
+                              }
                             });
                           },
                         ),
@@ -158,15 +145,24 @@ class _DokterScreenState extends State<DokterScreen> {
               builder: (context) => TambahDokterScreen(
                 onAddDokter: (String name) {
                   setState(() {
-                    dokterList.add({
-                      "name": name,
-                      "photo": 'assets/images/doctor1.png',
-                    });
-                    filteredDokterList.add({
-                      "name": name,
-                      "photo": 'assets/images/doctor1.png',
-                    }); // Tambahkan dokter ke daftar filter
-                    _saveDokterList(); // Simpan daftar dokter setelah penambahan
+                    // Cek apakah dokter dengan nama yang sama sudah ada
+                    bool dokterExists = dokterList.any((dokter) => dokter['name'] == name);
+                    if (!dokterExists) {
+                      dokterList.add({
+                        "name": name,
+                        "photo": 'assets/images/doctor1.png',
+                      });
+                      filteredDokterList.add({
+                        "name": name,
+                        "photo": 'assets/images/doctor1.png',
+                      });
+                      _saveDokterList();
+                    } else {
+                      // Jika dokter sudah ada, tampilkan pesan atau lakukan hal lain
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Dokter dengan nama yang sama sudah ada!')),
+                      );
+                    }
                   });
                 },
               ),
