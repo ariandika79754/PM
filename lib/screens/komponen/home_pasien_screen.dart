@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../layoutpasien/riwayat_kunjungan_screen.dart';
+import '../layoutpasien/jadwal_klinik_screen.dart';
 import '../layoutpasien/hasil_tes_screen.dart';
 import '../layoutpasien/bantuan_screen.dart';
 import '../layoutpasien/profile_screen.dart';
@@ -20,7 +21,7 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
   final List<String> _imageAssets = [
     'assets/images/hero.jpg',
     'assets/images/klinik.jpg',
-    'assets/images/klinik.jpg',
+    'assets/images/pm.jpg',
   ];
 
   @override
@@ -227,6 +228,18 @@ class _HomePasienScreenState extends State<HomePasienScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => HasilTesScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                   _buildFeatureCard(
+                    icon: Icons.schedule,
+                    label: 'Jadwal Klinik',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => JadwalKlinikScreen(),
                         ),
                       );
                     },

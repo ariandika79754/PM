@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/komponen/custom_bottom_nav.dart';
+import 'package:Puskesla/screens/komponen/custom_bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'sidebar_menu.dart';
 import '../pasien/pasien_screen.dart'; // Import PasienScreen
@@ -79,7 +79,7 @@ class _HomeContentState extends State<HomeContent> {
   final List<String> _images = [
     'assets/images/hero.jpg', // Path gambar
     'assets/images/klinik.jpg', // Path gambar
-    'assets/images/doctor3.png', // Path gambar
+    'assets/images/pm.jpg', // Path gambar
   ];
 
   @override

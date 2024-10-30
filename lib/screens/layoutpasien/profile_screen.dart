@@ -16,6 +16,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   TextEditingController _phoneController = TextEditingController();
 
   String? _imagePath; // Untuk menyimpan path gambar yang dipilih
+  bool _isPasswordVisible = false; // Status visibilitas password
 
   @override
   void initState() {
@@ -23,17 +24,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadProfileData(); // Load data profile saat inisialisasi
   }
 
- Future<void> _loadProfileData() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  setState(() {
-    _usernameController.text = prefs.getString('username') ?? 'Poliklinik';
-    _emailController.text = prefs.getString('email') ?? 'poliklinik@gmail.com';
-    _passwordController.text = prefs.getString('password') ?? '12345678';
-    _phoneController.text = prefs.getString('phone') ?? '';
-    _imagePath = prefs.getString('profile_image'); // Ambil path gambar
-  });
-}
-
+  Future<void> _loadProfileData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _usernameController.text = prefs.getString('username') ?? 'Poliklinik';
+      _emailController.text = prefs.getString('email') ?? 'poliklinik@gmail.com';
+      _passwordController.text = prefs.getString('password') ?? '12345678';
+      _phoneController.text = prefs.getString('phone') ?? '';
+      _imagePath = prefs.getString('profile_image'); // Ambil path gambar
+    });
+  }
 
   Future<void> _updateProfile() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -49,28 +49,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
- Future<void> _pickImage() async {
-  final ImagePicker _picker = ImagePicker();
-  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-  if (image != null) {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profile_image', image.path); // Simpan path gambar
-    setState(() {
-      _imagePath = image.path;
-    });
-    print("Path gambar yang disimpan: ${image.path}"); // Tambahkan ini
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('profile_image', image.path); // Simpan path gambar
+      setState(() {
+        _imagePath = image.path;
+      });
+      print("Path gambar yang disimpan: ${image.path}"); // Tambahkan ini
+    }
   }
-}
 
   Widget _buildEditableProfileItem(
-      String label, TextEditingController controller, IconData icon) {
+      String label, TextEditingController controller, IconData icon,
+      {bool isPassword = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: TextField(
         controller: controller,
+        obscureText: isPassword ? !_isPasswordVisible : false,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, color: Colors.green),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.green,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                )
+              : null,
           labelStyle: TextStyle(color: Colors.green),
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.green, width: 2.0),
@@ -124,8 +139,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildEditableProfileItem(
                   'Username', _usernameController, Icons.person),
               _buildEditableProfileItem(
-                  'Password', _passwordController, Icons.lock),
-              _buildEditableProfileItem('Email', _emailController, Icons.email),
+                  'Password', _passwordController, Icons.lock,
+                  isPassword: true),
+              _buildEditableProfileItem(
+                  'Email', _emailController, Icons.email),
               _buildEditableProfileItem(
                   'Nomor Telepon', _phoneController, Icons.phone),
               SizedBox(height: 20),
